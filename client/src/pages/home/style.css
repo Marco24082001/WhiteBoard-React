@@ -1,0 +1,211 @@
+
+.Home {
+    width:100vw;
+}
+
+.homeContainer {
+    --gap: -10px;
+    height: 100vh;
+    background-color: #CCCCCC;
+    gap: 45px;
+    display: inline-flex;
+    flex-wrap: wrap;
+    margin: calc(-1 * var(--gap)) 0 0 calc(-1 * var(--gap));
+    width: calc(100% + var(--gap));
+    justify-content:flex-start;
+    padding:5%;
+}
+  
+.box {
+    width: 300px;
+    height: 300px;
+    margin-top: 50px;
+    border: 1px solid lightgray;
+    font-family: Arial, Helvetica, sans-serif;
+    box-shadow: 0 0 10px 0 rgb(124, 124, 124);
+    position: relative;
+    background-color: cornsilk;
+}
+  
+.box:hover {
+    border: 3px solid blue;
+    cursor: pointer;
+}
+  
+.box .footer {
+    position: absolute;
+    bottom: 0px;
+    border-top: 1px solid lightgray;
+    align-items: center;
+    background-color:#fff;
+    color: white;
+    width:100%;
+    box-shadow: 0 0 10px 0 rgb(124, 124, 124);
+    font-size: 15px !important;
+}
+  
+.createButton {
+    background-color: #0c34fa;
+    border: none;
+    color: #fff;
+    position: relative;
+}
+  
+.newBoardButtonPlusOutside {
+    background-color: #fff;
+    border-radius: 50%;
+    height: 48px;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    width: 48px;
+}
+  
+.newBoardButtonPlusInside {
+    color: #0c34fb;
+    height: 16px;
+    padding-top: 16px;
+    padding-inline-start: 16px;
+    width: 16px;
+}
+  
+.addIcon {
+    fill: #0078d7;
+}
+  
+.newBoardButtonCaption {
+    bottom: 32px;
+    left: 50%;
+    position: absolute;
+    transform: translateX(-50%);
+}
+  
+.newBoardButtonCaption {
+    user-select: none;
+    white-space: nowrap;
+}
+
+
+  
+.editCaption {
+    display:inline-block;
+    width: 85%;
+    color:rgb(70, 70, 70);
+    /* padding: 20px 10px; */
+    padding: 15px 10px;
+    line-height:20px;
+    font-size: 15px;
+    height: 100%;
+}
+
+.editTitleForm {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%);
+    padding: 30px;
+    background: white !important;
+    z-index: 1000;
+    display: none;
+}
+
+.editTitleForm span {
+    display:block;
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+}
+
+.editTitleForm #title {
+    border: 1px solid black;
+    padding: 8px;
+    font-size: 16px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: block;
+    width: 250px;
+}
+.editTitleForm .editbtn{
+    padding: 0 16px;
+    line-height: 30px;
+    font-weight: bold;
+    font-size: 13px;
+    border:none;
+    cursor: pointer;
+}
+.editTitleForm #editbtn_save {
+    color: white;
+    background: blue;
+    border: 1px solid blue;
+    margin-right: 10px;
+}
+.editTitleForm #editbtn_cancel {
+    color: black;
+    background: white;
+    border: 1px solid black;
+    /* border: 1px solid black; */
+}
+
+.editTitleForm #editbtn_save:hover {
+    background: rgb(45, 45, 243);
+}
+
+.editTitleForm #editbtn_cancel:hover {
+    background: rgb(253, 246, 246);
+}
+
+.box .footer .editCaption:hover {
+    background-color: rgb(209, 207, 207);
+}
+  
+.dropdowns:hover {
+    background-color: rgb(209, 207, 207);
+}
+  
+.dropdowns:hover {
+    background-color: rgb(209, 207, 207);
+}
+
+.dropdownbtn {
+    box-sizing:border-box;
+    height: 100%;
+    color: black;
+  }
+
+.dropdowns {
+    position: relative;
+    display: inline-block;
+    width:15%;
+    line-height: 51px;
+    background-color: #f1f1f1;
+    text-align: center;
+    cursor: pointer;
+  }
+  
+  /* .dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0px;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 100;
+  } */
+  
+  .dropdown-content a {
+    color: black;
+    line-height: 40px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .dropdown-content a:hover {background-color: #f1f1f1}
+  
+  .dropdowns:hover .dropdown-content {
+    display: block;
+  }
+  
+  .dropdowns:hover .dropbtn {
+    background-color: #f1f1f1;
+  }	

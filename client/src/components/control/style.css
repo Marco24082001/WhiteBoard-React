@@ -1,0 +1,174 @@
+#controls {
+    position: absolute;
+    top: 60px;
+    width: 260px; height: 300px;
+    padding: 5px;
+    border: 1px solid black;
+    background-color: white;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+#tools {
+    left: 0;
+    width: 100%;
+}
+
+.tool_button {
+    width: 48px; height: 48px;
+    border: 3px solid white;
+    background-size: contain;
+}
+
+.tool_button.selected {
+    border-color: black;
+}
+
+.tool_button:disabled {
+    background-color: gray;
+    opacity: 0.5;
+}
+
+/* .tool_button:hover {
+    border: 3px solid red;
+} */
+
+.tool_button:disabled:hover {
+    border-color: white;
+}
+
+/* .tool_button #pencil {
+    background-image: url("../../icons/pencil.svg");
+    color:red;
+}
+
+.tool_button #eraser {
+    background-image: url("../../icons/eraser.svg");
+}
+
+.tool_button #line {
+    background-image: url("../../icons/line.svg");
+}
+
+.tool_button #rectangle {
+    background-image: url("../../icons/rectangle.svg");
+}
+
+.tool_button #circle {
+    background-image: url("../../icons/circle.svg");
+}
+
+.tool_button #fill {
+    background-image: url("../../icons/bucket.svg");
+} */
+
+#size {
+    width: 100%;
+}
+
+/* lots of online searching and sleepless nights to do this, hope you guys like it...? */
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 230px;
+    height: 15px;
+    background-color: rgb(218, 218, 218);
+    outline: none;
+    border-radius: 7px;
+}
+
+.slider::-webkit-slider-thumb, .slider::-moz-range-thumb {
+
+    border: 0;
+    width: 15px;
+    height: 15px;
+    background: rgb(103, 166, 238);
+    cursor: pointer;
+}
+
+#colours {
+    top: 0; left: 0;
+    width: 100%;
+    height: 100px;
+}
+
+.colour_button {
+    width: 30px;
+    height: 30px;
+    border: 3px solid white;
+    display: inline;
+    border-radius: 50%;
+}
+
+.colour_button#crimson {
+    background-color: crimson;
+}
+
+.colour_button.selected#crimson {
+    border-color: crimson;
+}
+
+.colour_button#orange {
+    background-color: orange;
+}
+
+.colour_button.selected#orange {
+    border-color: orange;
+}
+
+.colour_button#yellow {
+    background-color: yellow;
+}
+
+.colour_button.selected#yellow {
+    border-color: yellow;
+}
+
+.colour_button#springgreen {
+    background-color: springgreen;
+}
+
+.colour_button.selected#springgreen {
+    border-color: springgreen;
+}
+
+.colour_button#forestgreen {
+    background-color: forestgreen;
+}
+
+.colour_button.selected#forestgreen {
+    border-color: forestgreen;
+}
+
+.colour_button#dodgerblue {
+    background-color: dodgerblue;
+}
+
+.colour_button.selected#dodgerblue {
+    border-color: dodgerblue;
+}
+
+.colour_button#midnightblue {
+    background-color: midnightblue;
+}
+
+.colour_button.selected#midnightblue {
+    border-color: midnightblue;
+}
+
+.colour_button#mediumslateblue {
+    background-color: mediumslateblue;
+}
+
+.colour_button.selected#mediumslateblue {
+    border-color: mediumslateblue;
+}
+
+.colour_button#black {
+    background-color: black;
+}
+
+.colour_button.selected#black {
+    border-color: black;
+}
