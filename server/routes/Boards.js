@@ -23,8 +23,9 @@ router.get("/:id", validateToken, async (req, res) => {
         where: {
             room: room
         }
-    }).then((board) => {
-        res.json(board)
+    }).then(async (board) => {
+        var bufferBase64 = new Buffer( board.dataUrl, 'binary' ).toString('base64');
+        res.json(bufferBase64);
     });
 });
 
@@ -52,6 +53,8 @@ router.put("/updatetitle", validateToken, (req, res) => {
 
 router.put("/updateboard", validateToken, (req, res) => {
     const {room, dataUrl} = req.body;
+    console.log(req.body.dataUrl);
+    // dataURLtoBlob(data)
     Boards.update(
         { 
         dataUrl: dataUrl

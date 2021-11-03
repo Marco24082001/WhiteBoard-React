@@ -2,9 +2,11 @@ import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
 import axios from 'axios';
 import { useParams } from "react-router-dom";
 import { Link, useHistory } from "react-router-dom";
+import {canvastoblob} from "blueimp-canvas-to-blob";
 import {io} from 'socket.io-client';
 import Control from '../control/Control';
 import './style.css';
+
 const Board = (props) => {
   const roomId = props.roomId;
   const history = useHistory();
@@ -29,8 +31,8 @@ const Board = (props) => {
     size.current = e.target.value;  
   };
 
-  const updataBoard = async (dataUrl) => {
-    const data = {room: roomId, dataUrl: dataUrl}
+  const updataBoard = (blob) => {
+    const data = {room: roomId, dataUrl: blob}
     axios.put("http://localhost:8080/boards/updateboard/", data, {
       headers: { accessToken: localStorage.getItem("accessToken")},
     })
@@ -41,18 +43,11 @@ const Board = (props) => {
     })
   }
 
-  const getBoard = (roomId) => {
-    axios.get(`http://localhost:8080/boards/${roomId}`,{ 
-      headers: { accessToken: localStorage.getItem("accessToken")},
-    })
-    .then((response) => {
-      console.log(response.data)
-    })
-  }
-
+  
   const username = "Thanh Vi";
 
   useEffect(() => {
+    
     socketRef.current = io("http://localhost:8080");
     socketRef.current.emit('joinRoom', {roomId, username});
     socketRef.current.on('error', (data) => {
@@ -71,7 +66,17 @@ const Board = (props) => {
     // }
 
     // --------------- getContext() method returns a drawing context on the canvas-----
-
+    const getBoard = (roomId) => {
+      axios.get(`http://localhost:8080/boards/${roomId}`,{ 
+        headers: { accessToken: localStorage.getItem("accessToken")},
+      })
+      .then((response) => {
+        console.log(response.data);
+        onDrawingEvent(response.data);
+      })
+    }
+    getBoard(roomId);
+  
     const canvas = canvasRef.current;
     const spreadCanvas = spreadCanvasRef.current;
     const spreadctx = spreadCanvas.getContext('2d');
@@ -89,7 +94,11 @@ const Board = (props) => {
           timeout.current = setTimeout(function() {
             let base64ImageData = canvas.toDataURL("image/png");
             socketRef.current.emit("canvas-data", {roomId,base64ImageData});
-            updataBoard(base64ImageData);
+            canvas.toBlob(function(blob) {
+              console.log(blob);
+              updataBoard(blob);
+            }) 
+            // updataBoard(canvastoblob(base64ImageData));
           }, 200);
     }
     // ------------------------------- create the drawing ----------------------------
@@ -354,7 +363,7 @@ const Board = (props) => {
 
     socketRef.current.on('canvas-data', onDrawingEvent);
     socketRef.current.on('share-data', onDrawingEvent)
-    onDrawingEvent(getBoard(roomId));
+    // onDrawingEvent(getBoard(roomId));
   }, []);
 
   // ------------- The Canvas and color elements --------------------------
