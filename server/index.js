@@ -49,14 +49,16 @@ app.use(express.json())
 function onConnection(socket){
     console.log("user online");
     socket.on('joinRoom', ({roomId, username}) => {
-        console.log(roomId);
+        // console.log(roomId);
+        console.log(socket.id);
         if(Rooms.checkCount(roomId)) {
-            console.log(socket.id);
+            // console.log(socket.id);
             socket.join(roomId);
             Rooms.increaseRoom(roomId);
             userJoin(socket.id, username, roomId);
             socket.emit('message', 'welcom to white board');
             socket.broadcast.in(roomId).emit('message', 'a person has joined the board');
+            socket.broadcast.in(roomId).emit('share-data', 'a person has joined the board');
         }
         else socket.emit('error', 'Board is full');
     })  

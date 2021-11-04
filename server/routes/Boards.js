@@ -22,10 +22,9 @@ router.get("/:id", validateToken, async (req, res) => {
     Boards.findOne({
         where: {
             room: room
-        }
+        }           
     }).then(async (board) => {
-        var bufferBase64 = new Buffer( board.dataUrl, 'binary' ).toString('base64');
-        res.json(bufferBase64);
+        res.json(board.dataUrl);
     });
 });
 
@@ -39,9 +38,9 @@ router.post("/create", validateToken, (req,res) => {
     }).then(board => res.json(board))
 });
 
-router.put("/updatetitle", validateToken, (req, res) => {
+router.put("/updatetitle", validateToken, async (req, res) => {
     const {boardId, title} = req.body;
-    Boards.update(
+    await Boards.update(
         {
             title: title
         },
@@ -51,11 +50,9 @@ router.put("/updatetitle", validateToken, (req, res) => {
     ).then(() => res.json("edit successfully"));
 })
 
-router.put("/updateboard", validateToken, (req, res) => {
+router.put("/updateboard", validateToken, async (req, res) => {
     const {room, dataUrl} = req.body;
-    console.log(req.body.dataUrl);
-    // dataURLtoBlob(data)
-    Boards.update(
+    await Boards.update(
         { 
         dataUrl: dataUrl
         },

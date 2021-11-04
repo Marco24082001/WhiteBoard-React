@@ -31,7 +31,7 @@ const Board = (props) => {
     size.current = e.target.value;  
   };
 
-  const updataBoard = (blob) => {
+  const updateBoard = (blob) => {
     const data = {room: roomId, dataUrl: blob}
     axios.put("http://localhost:8080/boards/updateboard/", data, {
       headers: { accessToken: localStorage.getItem("accessToken")},
@@ -39,6 +39,7 @@ const Board = (props) => {
     .then((res) => {
       if(res.data.error) {
         // alert(res.data.error);
+        alert(res.data.error);
       }
     })
   }
@@ -61,17 +62,12 @@ const Board = (props) => {
   },[]);
 
   useEffect(() => {
-    // const tools = {
-    //   'eraser':
-    // }
-
     // --------------- getContext() method returns a drawing context on the canvas-----
     const getBoard = (roomId) => {
       axios.get(`http://localhost:8080/boards/${roomId}`,{ 
         headers: { accessToken: localStorage.getItem("accessToken")},
       })
       .then((response) => {
-        console.log(response.data);
         onDrawingEvent(response.data);
       })
     }
@@ -94,11 +90,7 @@ const Board = (props) => {
           timeout.current = setTimeout(function() {
             let base64ImageData = canvas.toDataURL("image/png");
             socketRef.current.emit("canvas-data", {roomId,base64ImageData});
-            canvas.toBlob(function(blob) {
-              console.log(blob);
-              updataBoard(blob);
-            }) 
-            // updataBoard(canvastoblob(base64ImageData));
+            updateBoard(base64ImageData);
           }, 200);
     }
     // ------------------------------- create the drawing ----------------------------
@@ -362,7 +354,7 @@ const Board = (props) => {
     };
 
     socketRef.current.on('canvas-data', onDrawingEvent);
-    socketRef.current.on('share-data', onDrawingEvent)
+    socketRef.current.on('share-data', emitCanvas)
     // onDrawingEvent(getBoard(roomId));
   }, []);
 

@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         },
         dataUrl: {
-            type: DataTypes.BLOB,
+            type: DataTypes.TEXT,
             allowNull: true,
         },
     });
