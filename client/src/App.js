@@ -3,8 +3,6 @@ import "./App.css";
 import { BrowserRouter as Router, Route, Switch, Link, useHistory } from "react-router-dom";
 // import Navbar from './components/Navbar';
 import Home from "./pages/home/Home";
-import CreatePost from "./pages/CreatePost";
-import Registration from "./pages/Registration";
 import Login from "./pages/login/Login";
 import Forgot from "./pages/forgot/Forgot";
 import Newpassword from "./pages/newpassword/Newpassword";
@@ -53,9 +51,8 @@ function App() {
           }
           <Switch>
             <Route path="/" exact component={Home} />
-            <Route path="/createpost" exact component={CreatePost} />
-            <Route path="/registration" exact component={Registration} />
             <Route path="/login" exact component={Login} />
+            <Route path="/login/:id" exact component={Login} />
             <Route path="/board/:id" exact component={Whiteboard} />
             <Route path="/reset/" exact component={Forgot} />
             <Route path="/reset/:token" exact component={Newpassword} />

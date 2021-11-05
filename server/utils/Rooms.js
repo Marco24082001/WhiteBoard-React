@@ -9,7 +9,7 @@ Rooms.decreaseRoom = function(room) {
     this[room]--;
 }
 
-Rooms.Max = 3;
+Rooms.Max = 10;
 
 Rooms.checkCount = function(room) {
     if(this[room] == undefined) return true;

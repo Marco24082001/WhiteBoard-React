@@ -1,4 +1,5 @@
-import React, { useState, useContext, useRef } from "react";
+import React, { useState, useContext, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import { Link, useHistory } from "react-router-dom";
 import { AuthContext } from "../../helpers/AuthContext";
@@ -7,6 +8,7 @@ import isEmail from "validator/lib/isEmail";
 import './style.css';
 
 function Login() {
+  const room = useParams();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -80,7 +82,8 @@ function Login() {
       } else {
         localStorage.setItem("accessToken", response.data);
         setAuthState(true);
-        history.push("/");
+        if(room.id !== undefined) history.push(`/board/${room.id}`)
+        else history.push("/");
       }
     });
   };

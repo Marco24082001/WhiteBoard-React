@@ -8,7 +8,7 @@ import line from '../../icons/line.svg';
 import rectangle from '../../icons/rectangle.svg';
 import circle from '../../icons/circle.svg';
 // rfce
-function Control({onColorUpdate, onSizeUpdate, onToolUpdate}) {
+function Control({onColorUpdate, onColorUpdateField, onSizeUpdate, onToolUpdate}) {
     useEffect(() => {
         const colors = document.getElementsByClassName('colour_button');
         for(let i = 0; i < colors.length; i++){
@@ -57,12 +57,11 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate}) {
                 <button className='tool_button' id='circle' style={{
                     backgroundImage: `url(${circle})`,
                 }}></button>
-                {/* <button className='tool_button' disabled='true' id='fill'><img src={eraser}/></button> */}
             </div>
             <hr />
             <p id='size_label'>Size: 5</p>
             <div id='size'>
-                <input type='range' onInput={onSizeUpdate} min='1' max='100' class='slider' step='0.1' id='size_slider' />
+                <input type='range' onInput={(e) => {document.getElementById('size_label').innerText = 'Size: ' + e.target.value; onSizeUpdate(e)}} min='1' max='100' class='slider' step='0.1' id='size_slider' />
             </div>
             <hr />
             <p>Colour</p>
@@ -72,10 +71,11 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate}) {
                 <button className='colour_button' id='orange'></button>
                 <button className='colour_button' id='yellow'></button>
                 <button className='colour_button' id='springgreen'></button>
-                <button className='colour_button' id='forestgreen'></button>
                 <button className='colour_button' id='dodgerblue'></button>
                 <button className='colour_button' id='midnightblue'></button>
+                <input id='colourfield' onInput={onColorUpdateField} type="color" />
             </div>
+            
         </div>
     )
 }

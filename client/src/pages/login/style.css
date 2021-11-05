@@ -1,10 +1,5 @@
-body{
-	margin:0;
-	color:#6a6f8c;
-	background:#c8c8c8;
-	font:600 16px/18px 'Open Sans',sans-serif;
-}
-*,:after,:before{box-sizing:border-box}
+
+*,:after,:before{box-sizing:border-box}	
 .clearfix:after,.clearfix:before{content:'';display:table}
 .clearfix:after{clear:both;display:block}
 a{color:inherit;text-decoration:none}
@@ -12,6 +7,7 @@ a{color:inherit;text-decoration:none}
 	width: 100vw;
 	height: 100vh;
 	position:relative;
+	background: url(C:\Users\PC\Desktop\Knowledge\Semester-5\PBL4\WhiteBoard-Version1.2\client\src\images\bora-bora-685303_1920.jpg)
 }
 .login-wrap{
 	top: 50%;
@@ -21,8 +17,8 @@ a{color:inherit;text-decoration:none}
 	max-width:525px;
 	min-height:670px;
 	position:relative;
-	background:url(https://raw.githubusercontent.com/khadkamhn/day-01-login-form/master/img/bg.jpg) no-repeat center;
-	box-shadow:0 12px 15px 0 rgba(0,0,0,.24),0 17px 50px 0 rgba(0,0,0,.19);
+	background:url(C:\Users\PC\Desktop\Knowledge\Semester-5\PBL4\WhiteBoard-Version1.2\client\src\images\bora-bora-685303_1920.jpg) no-repeat center;
+	box-shadow:0 12px 15px 0 rgba(0, 0, 0, 0.103),0 17px 50px 0 rgba(48, 46, 46, 0.925);
 }
 .login-html{
 	width:100%;

@@ -10,7 +10,9 @@ function Whiteboard() {
   const [listOfPosts, setListOfPosts] = useState([]);
   let history = useHistory();
   useEffect(() => {
-    // console.log(room)
+    if(!localStorage.getItem("accessToken")){
+      history.push(`/login/${room.id}`)
+    }
   }, []);
 
   return (

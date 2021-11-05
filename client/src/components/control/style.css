@@ -38,36 +38,10 @@
     border-color: white;
 }
 
-/* .tool_button #pencil {
-    background-image: url("../../icons/pencil.svg");
-    color:red;
-}
-
-.tool_button #eraser {
-    background-image: url("../../icons/eraser.svg");
-}
-
-.tool_button #line {
-    background-image: url("../../icons/line.svg");
-}
-
-.tool_button #rectangle {
-    background-image: url("../../icons/rectangle.svg");
-}
-
-.tool_button #circle {
-    background-image: url("../../icons/circle.svg");
-}
-
-.tool_button #fill {
-    background-image: url("../../icons/bucket.svg");
-} */
-
 #size {
     width: 100%;
 }
 
-/* lots of online searching and sleepless nights to do this, hope you guys like it...? */
 .slider {
     -webkit-appearance: none;
     appearance: none;
@@ -85,6 +59,28 @@
     height: 15px;
     background: rgb(103, 166, 238);
     cursor: pointer;
+}
+
+#colourfield {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    width: 30px;
+    height: 34px;
+    border: none;
+    cursor: pointer;
+}
+
+#colourfield::-webkit-color-swatch {
+    border-radius: 50%;
+    border: 4px solid #000000;
+    display: inline;
+}
+
+#colourfield::-moz-color-swatch{
+    border-radius: 50%;
+    border: 3px solid #000000;
 }
 
 #colours {

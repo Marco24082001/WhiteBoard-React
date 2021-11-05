@@ -9,6 +9,7 @@ import './style.css';
 
 const Board = (props) => {
   const roomId = props.roomId;
+  console.log(props);
   const history = useHistory();
 
   const canvasRef = useRef(null);
@@ -24,13 +25,17 @@ const Board = (props) => {
   const onColorUpdate = (e) => {
     color.current = e.target.id;
   };
+  const onColorUpdateField = (e) => {
+    color.current = e.target.value;
+  }
   const onToolUpdate = (e) => {
     tool.current = e.target.id;
   };
   const onSizeUpdate = (e) =>{
     size.current = e.target.value;  
   };
-
+ 
+  // store data board to db
   const updateBoard = (blob) => {
     const data = {room: roomId, dataUrl: blob}
     axios.put("http://localhost:8080/boards/updateboard/", data, {
@@ -38,7 +43,6 @@ const Board = (props) => {
     })
     .then((res) => {
       if(res.data.error) {
-        // alert(res.data.error);
         alert(res.data.error);
       }
     })
@@ -48,7 +52,6 @@ const Board = (props) => {
   const username = "Thanh Vi";
 
   useEffect(() => {
-    
     socketRef.current = io("http://localhost:8080");
     socketRef.current.emit('joinRoom', {roomId, username});
     socketRef.current.on('error', (data) => {
@@ -62,7 +65,7 @@ const Board = (props) => {
   },[]);
 
   useEffect(() => {
-    // --------------- getContext() method returns a drawing context on the canvas-----
+    // retrive data board when access
     const getBoard = (roomId) => {
       axios.get(`http://localhost:8080/boards/${roomId}`,{ 
         headers: { accessToken: localStorage.getItem("accessToken")},
@@ -78,18 +81,16 @@ const Board = (props) => {
     const spreadctx = spreadCanvas.getContext('2d');
     const ctx = canvas.getContext('2d');
 
+    // store clientx y
     const current = {};
 
-    // helper that will update the current color
-    // const onColorUpdate = (e) => {
-    //   current.color = e.target.className.split(' ')[1];
-    // };
     let drawing = false;
     const emitCanvas = () => {
       if(timeout.current != undefined) clearTimeout(timeout.current)
           timeout.current = setTimeout(function() {
             let base64ImageData = canvas.toDataURL("image/png");
             socketRef.current.emit("canvas-data", {roomId,base64ImageData});
+            console.log(base64ImageData.length);
             updateBoard(base64ImageData);
           }, 200);
     }
@@ -301,7 +302,6 @@ const Board = (props) => {
         emit: true,
       }
       tools[tool.current].draw(data);
-      // drawLine(current.x, current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, color.current, size.current, true);
     };
 
     // ----------- limit the number of events per second -----------------------
@@ -339,6 +339,7 @@ const Board = (props) => {
 
       spreadCanvas.width = window.innerWidth;
       spreadCanvas.height = window.innerHeight;
+      getBoard(roomId);
     };
 
     window.addEventListener('resize', onResize, false);
@@ -364,7 +365,7 @@ const Board = (props) => {
     <div>
       <canvas ref={canvasRef} className="board" />
       <canvas ref= {spreadCanvasRef} className = "spreadboard" />
-      <Control onColorUpdate = {onColorUpdate} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate}/>
+      <Control onColorUpdate = {onColorUpdate} onColorUpdateField = {onColorUpdateField} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate}/>
     </div>
   );
 };

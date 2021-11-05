@@ -68,7 +68,8 @@ function Home() {
         }
       })
   }
-  useLayoutEffect(() => {
+  useEffect(() => {
+    // window.location.reload(false);
     if(!localStorage.getItem("accessToken")){
       history.push("/login")
     }else{
@@ -102,7 +103,7 @@ function Home() {
         return (
           <div
             key={key}
-            className="box"
+            className="box boards"
             onClick={(e) => {
               // deleteBoard(e, value.id)
               if(e.srcElement == this)  history.push(`/board/${value.room}`);
@@ -112,11 +113,11 @@ function Home() {
               e.stopPropagation();
               enableTitle(value.id);
             }}>
-              <span className="editCaption" onClick={(e) => {enableTitle(value.id);}}><FaEdit style={{'width' : '30px', 'verticalAlign' : 'center'}}/>Edited: {new Date(value.updatedAt ).toDateString()}{
-                (value.title != "Untitled") && (
-                  <span>{value.title}</span>
-                )
-              }</span>
+              <div className="editCaption" onClick={(e) => {enableTitle(value.id);}}><FaEdit style={{'width' : '30px', 'verticalAlign' : 'center'}}/>{
+                (value.title != "Untitled")?(
+                  <span>{value.title}<br/></span>
+                ):(<span>{value.title}</span>)
+              }</div>
               <div className="dropdowns">
                 <span className="dropdownbtn" onClick={(e) => {
                   e.stopPropagation();
