@@ -7,25 +7,34 @@ a{color:inherit;text-decoration:none}
 	width: 100vw;
 	height: 100vh;
 	position:relative;
-	background: url(C:\Users\PC\Desktop\Knowledge\Semester-5\PBL4\WhiteBoard-Version1.2\client\src\images\bora-bora-685303_1920.jpg)
+	background: url("../../images/bora-bora-685303_1920.jpg");
+	display:flex;
+	justify-content: space-evenly;
+	align-items: center;
 }
 .login-wrap{
-	top: 50%;
-	transform:translateY(-50%);
-	width:100%;
-	margin:auto;
+	/* top: 50%; */
+	/* transform:translateY(-50%); */
+	width:50%;
+	height: 60%;
 	max-width:525px;
 	min-height:670px;
 	position:relative;
-	background:url(C:\Users\PC\Desktop\Knowledge\Semester-5\PBL4\WhiteBoard-Version1.2\client\src\images\bora-bora-685303_1920.jpg) no-repeat center;
+	background:url("../../images/bora-bora-685303_1920.jpg") no-repeat center;
 	box-shadow:0 12px 15px 0 rgba(0, 0, 0, 0.103),0 17px 50px 0 rgba(48, 46, 46, 0.925);
+	/* right: 10px; */
 }
+.login-wrap:hover {
+	background-color: rgba(30 38 46 / 58%);
+}
+
 .login-html{
 	width:100%;
 	height:100%;
 	position:absolute;
 	padding:90px 70px 50px 70px;
-	background:rgba(40,57,101,.9);
+	background-color: rgba(30 38 46 / 88%);
+	/* left: 10px; */
 }
 .login-html .sign-in-htm,
 .login-html .sign-up-htm{
@@ -154,4 +163,85 @@ a{color:inherit;text-decoration:none}
 	color: rgb(218, 71, 71);
 	margin-top: 10px;
 	font-style: italic;
+}
+
+.about-wrap {
+	width: 50%;
+	color: white;
+	text-align: center;
+	box-shadow:0 12px 15px 0 rgba(0, 0, 0, 0.103),0 17px 50px 0 rgba(48, 46, 46, 0.925);
+}
+
+.about-wrap:hover {
+	background-color: rgba(30 38 46 / 58%);
+}
+
+.about-html {
+	width:100%;
+	padding:90px 70px 50px 70px;
+	background-color: rgba(30 38 46 / 88%);
+}
+
+.about-title #abouttlt {
+	font-size: 2em;
+	margin:40px;
+	line-height: 40px;
+}
+
+.about-title #descriptiontlt{
+	font-size: 0.8em;
+	line-height: 30px;
+}
+#descriptiontlt img {
+	height: 40px;
+	margin-top:10px;
+}
+
+.about-title #about-btn{
+	font-family: IBM Plex Sans,sans-serif;
+    font-size: 1em;
+	margin-top: 20px;
+}
+
+#about-btn button {
+	border: 2px solid #ffe42f;
+	border-radius: 15px;
+	color: white;
+    padding: 10px 20px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 700;
+    line-height: 100%;
+    letter-spacing: 1px;
+    display: inline-block;
+    position: relative;
+    transition: all .3s ease;
+	background-color: rgba(0, 0, 0, 0.103)
+}
+
+#about-btn button:hover,
+#about-btn button:focus {
+	color: black;
+    z-index: 1;
+}
+
+#about-btn button::after {
+	content: "";
+    position: absolute;
+    height: 101%;
+    bottom: 0%;
+    width: 30%;
+    background: #ffe42f;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: all .3s ease;
+	border-radius: 15px;
+}
+
+#about-btn button:hover:after, #about-btn button:focus:after {
+	width: 101%;
+    z-index: -1;
+    opacity: 1;	
 }

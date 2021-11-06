@@ -5,6 +5,7 @@ import { Link, useHistory } from "react-router-dom";
 import { AuthContext } from "../../helpers/AuthContext";
 import isEmpty from "validator/lib/isEmpty";
 import isEmail from "validator/lib/isEmail";
+import logodut from "../../images/logodut.png";
 import './style.css';
 
 function Login() {
@@ -120,6 +121,21 @@ function Login() {
 
   return (
     <div className="login-container">
+      <div className="about-wrap">
+        <div className="about-html">
+          <h1 className="about-title">
+            <div id="abouttlt">
+              TingTy.io
+            </div>
+            <div id="descriptiontlt">A collaboration painting application by DUT
+              <img src={logodut}/>
+            </div>
+            <div id="about-btn">
+              <button>Start drawing</button>
+            </div>
+          </h1>
+        </div>
+      </div>
       <div className="login-wrap">
         <div className="login-html">
           <input id="tab-1" type="radio" name="tab" className="sign-in" checked={check} onClick={handleCheck}/><label for="tab-1" className="tab">Sign In</label>
@@ -181,9 +197,6 @@ function Login() {
         </div>
       </div>
     </div>
-
-    
-    
   );
 }
 
