@@ -1,10 +1,9 @@
 import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
 import axios from 'axios';
-import { useParams } from "react-router-dom";
-import { Link, useHistory } from "react-router-dom";
-import {canvastoblob} from "blueimp-canvas-to-blob";
+import {useHistory } from "react-router-dom";
 import {io} from 'socket.io-client';
 import Control from '../control/Control';
+import Chat from '../chat/Chat';
 import './style.css';
 
 const Board = (props) => {
@@ -57,10 +56,6 @@ const Board = (props) => {
     socketRef.current.on('error', (data) => {
       console.log(data);
       history.push('/overload');
-    })
-    socketRef.current.on('message', (data) => {
-      console.log(data);
-
     })
   },[]);
 
@@ -366,6 +361,7 @@ const Board = (props) => {
       <canvas ref={canvasRef} className="board" />
       <canvas ref= {spreadCanvasRef} className = "spreadboard" />
       <Control onColorUpdate = {onColorUpdate} onColorUpdateField = {onColorUpdateField} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate}/>
+      <Chat socket={socketRef.current} roomId={roomId}/>
     </div>
   );
 };

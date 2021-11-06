@@ -57,21 +57,23 @@ function onConnection(socket){
             socket.join(roomId);
             Rooms.increaseRoom(roomId);
             userJoin(socket.id, username, roomId);
-            socket.emit('message', 'welcom to white board');
+            // socket.emit('message', 'welcom to white board');
             socket.broadcast.in(roomId).emit('message', 'a person has joined the board');
             socket.broadcast.in(roomId).emit('share-data', 'a person has joined the board');
         }
         else socket.emit('error', 'Board is full');
     })  
 
+    // listen for canvas-data
     socket.on('canvas-data', (data) => {
-        // io.emit('canvas-data', data);
-        // console.log(socket.id);
-        // console.log(data);
-        io.to(data.roomId).emit('canvas-data', data.base64ImageData);
-        // io.emit('canvas-data', data);
-        // socket.in(data.room.id).broadcast.emit('canvas-data', data);
+        socket.to(data.roomId).emit('canvas-data', data.base64ImageData);
     })
+
+    // listen for chatMessage
+    socket.on('chatMessage', (data) => {
+        socket.broadcast.to(data.roomId).emit('message', data.msg);
+    })
+
     socket.on('disconnect', () => {
         const user = getCurrentUser(socket.id);
         if(user) {
