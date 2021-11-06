@@ -1,5 +1,5 @@
 import React from "react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import Board from "../../components/board/Board";
@@ -7,7 +7,6 @@ import './style.css';
 
 function Whiteboard() {
   const room = useParams();
-  const [listOfPosts, setListOfPosts] = useState([]);
   let history = useHistory();
   useEffect(() => {
     if(!localStorage.getItem("accessToken")){

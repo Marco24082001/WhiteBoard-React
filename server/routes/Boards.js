@@ -1,7 +1,8 @@
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+const router = express.Router();
 const {Boards} = require('../models');
 const { validateToken } = require("../middlewares/AuthMiddleware");
+const shortid = require('shortid');
 
 router.get("/all", validateToken, (req, res) => {
     Boards.findAll({
@@ -28,9 +29,24 @@ router.get("/:id", validateToken, async (req, res) => {
     });
 });
 
-router.post("/create", validateToken, (req,res) => {
-    const { title, room} = req.body;
+router.post("/create", validateToken, async (req,res) => {
+    let { title, room} = req.body;
     const user = req.user;
+    let exist_board = await Boards.findOne({
+        where: {
+            room: room,
+        }
+    });
+
+    while(exist_board) {
+        room = shortid.generate();
+        exist_board = await Boards.findOne({
+            where: {
+                room: room,
+            }
+        });
+    }
+    
     Boards.create({ 
         title: title,
         room: room,
