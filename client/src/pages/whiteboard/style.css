@@ -16,3 +16,11 @@
     margin-top: 1%;
     background: white;
 } */
+
+.board-container {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    overflow-y:hidden;
+}
+

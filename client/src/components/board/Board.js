@@ -357,7 +357,7 @@ const Board = (props) => {
   // ------------- The Canvas and color elements --------------------------
 
   return (
-    <div>
+    <div id="whiteboard-container">
       <canvas ref={canvasRef} className="board" />
       <canvas ref= {spreadCanvasRef} className = "spreadboard" />
       <Control onColorUpdate = {onColorUpdate} onColorUpdateField = {onColorUpdateField} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate}/>

@@ -2,6 +2,14 @@
     box-sizing: border-box;
   }
   
+  /* #whiteboard-container {
+    position: relative;
+    height: 100vh;
+    width: 100vh;
+    overflow-y: hidden;
+    top: 0;
+    left: 10;
+  } */
   .board {
     height: 100%;
     width: 100%;

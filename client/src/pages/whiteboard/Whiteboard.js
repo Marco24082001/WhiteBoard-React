@@ -15,14 +15,9 @@ function Whiteboard() {
   }, []);
 
   return (
-    <div className ="container">
-        <div className="color-picker-container">
-            <input type="color"/>
-        </div>
         <div class="board-container">
             <Board roomId = {room.id}></Board>
         </div>
-    </div>
   );
 }
 

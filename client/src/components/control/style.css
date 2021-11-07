@@ -1,7 +1,7 @@
 #controls {
     position: absolute;
-    top: 60px;
-    width: 260px; height: 300px;
+    top: 50px;
+    width: 270px; height: 300px;
     padding: 5px;
     border: 1px solid black;
     background-color: white;
@@ -167,4 +167,8 @@
 
 .colour_button.selected#black {
     border-color: black;
+}
+
+.tool_button {
+    background-color : white;
 }

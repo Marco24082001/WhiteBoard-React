@@ -58,7 +58,7 @@ function onConnection(socket){
             Rooms.increaseRoom(roomId);
             userJoin(socket.id, username, roomId);
             // socket.emit('message', 'welcom to white board');
-            socket.broadcast.in(roomId).emit('message', 'a person has joined the board');
+            // socket.broadcast.in(roomId).emit('message', 'a person has joined the board');
             socket.broadcast.in(roomId).emit('share-data', 'a person has joined the board');
         }
         else socket.emit('error', 'Board is full');
@@ -71,16 +71,17 @@ function onConnection(socket){
 
     // listen for chatMessage
     socket.on('chatMessage', (data) => {
-        socket.broadcast.to(data.roomId).emit('message', data.msg);
+        
+        socket.broadcast.to(data.roomId).emit('message',{user:'others', msg: data.msg});
     })
 
     socket.on('disconnect', () => {
         const user = getCurrentUser(socket.id);
         if(user) {
-        Rooms.decreaseRoom(user.room);
-        console.log('user leave');
-        io.in(user.room).emit('message', `${user.username} is leave`);
-    }
+            Rooms.decreaseRoom(user.room);
+            console.log('user leave');
+            io.in(user.room).emit('message', `${user.username} is leave`);
+        }
     })
 }
 

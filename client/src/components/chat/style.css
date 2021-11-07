@@ -1,4 +1,6 @@
-#chat-box {
+
+#chat-container .chat-box {
+    transition: all 0.4s;
     position: absolute;
     width: 270px;
     height:350px;
@@ -9,6 +11,11 @@
     flex-direction:column;
     box-shadow: 2px 2px 20px rgba(0,0,0,0.4);
 }
+
+#chat-container .chat-box.hidden {
+    transform: translateY(100%);
+}
+
 
 .chat-box-header {
     padding: 5px 10px;
@@ -60,8 +67,8 @@
     font-size: 0.9rem;
     flex: 80%;
     padding-right: 2px;
-    padding-top: 2px;
-    padding-bottom: 2px;
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
 .chat-box-footer form button {
@@ -83,4 +90,26 @@
     font-size: 22px;
     cursor: pointer;
     vertical-align: middle;
+}
+
+
+#show-chat{
+    position:absolute;
+    bottom: 0px;
+    left: 1px;
+    outline: none;
+    border:none;
+    cursor:pointer;
+    
+}
+
+.toggleMessage{
+    color: black;
+    background-color: white;
+    vertical-align: middle ;
+    font-size: 1.5rem;
+}
+
+.toggleMessage span{
+    vertical-align: bottom;
 }
