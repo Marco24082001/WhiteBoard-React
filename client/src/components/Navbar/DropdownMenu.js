@@ -9,7 +9,9 @@ function DropdownMenu() {
     const logout = () => {
         localStorage.removeItem("accessToken")
         history.push("/login")
-        setAuthState(false)
+        setAuthState((previousState) => {
+          return {...previousState, status: false};
+        })
     }
     function DropdownItem(props) {
       return (

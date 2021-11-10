@@ -16,7 +16,7 @@ function Login() {
   const [repeat_password, setRepeat_password] = useState("");
   const [validationMsg, setValidationMsg] = useState("");
   const [check, setCheck] = useState("checked");
-  const { setAuthState } = useContext(AuthContext);
+  const { authState, setAuthState } = useContext(AuthContext);
 
   let history = useHistory();
 
@@ -82,7 +82,9 @@ function Login() {
         alert(response.data.error);
       } else {
         localStorage.setItem("accessToken", response.data);
-        setAuthState(true);
+        setAuthState((previousState) => {
+          return {...previousState, status: true}
+        });
         if(room.id !== undefined) history.push(`/board/${room.id}`)
         else history.push("/");
       }
@@ -101,13 +103,16 @@ function Login() {
         alert(response.data.error)
       } else {
         localStorage.setItem("accessToken", response.data);
-        setAuthState(true);
+        setAuthState((previousState) => {
+          return {...previousState, status: true};
+        });
         history.push("/");
       }
     });
   }
 
   const handleKeypress_lg = e => {
+    // console.log(authState.socket);
     if(e.charCode === 13) {
       login();
     }

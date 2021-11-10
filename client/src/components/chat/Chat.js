@@ -1,10 +1,13 @@
-import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
+import React, { useRef, useEffect, useContext } from 'react';
+import { SocketContext } from '../../helpers/SocketContext';
+import { AuthContext } from "../../helpers/AuthContext";
 import {FaComment, FaComments, FaChevronDown} from "react-icons/fa";
+import {} from "react-icons/fa"
 import { Socket } from 'socket.io-client';
 import './style.css';
-function Chat({socket, roomId}) {
-    const socketRef = useRef();
-    socketRef.current = socket;
+function Chat(props) {
+    const {authState} = useContext(AuthContext);
+    const roomId = props.roomId;
     const send_msg = e =>{
         e.preventDefault();
         // Get message
@@ -12,10 +15,12 @@ function Chat({socket, roomId}) {
         outputMessage({user: 'me', msg: e.target.elements.msg.value});
         // console.log(socket);
         // Emit message to server
-        socket.emit('chatMessage', {roomId, msg});
+        authState.socket.emit('chatMessage', {roomId, msg});
+        console.log(roomId)
         e.target.elements.msg.value = '';
         e.target.elements.msg.focus();
     }
+
     const outputMessage = (data) => {
         if(data.user === 'me'){
             const p = document.createElement('p');
@@ -45,17 +50,17 @@ function Chat({socket, roomId}) {
     }
 
     useEffect(() => {
-        setTimeout(() => {
-            // Message from server
-            socketRef.current.on('message', msg => {
-                console.log(msg);
-                outputMessage(msg);
-            });
-        },3000);        
-      },[]);
+        console.log(authState.socket);
+        authState.socket.on('message', msg => {
+            console.log(authState.socket);
+            
+            outputMessage(msg);
+        });        
+      },[authState.socket]);
 
     return (
         <div id="chat-container">
+            
             <button id="show-chat" onClick={hideMessage}>
                 <span className="toggleMessage"><FaComment/></span>
             </button>
@@ -71,6 +76,7 @@ function Chat({socket, roomId}) {
                 <div className="chat-box-footer">
                     <form onSubmit={send_msg}>
                         <input type="text" id="msg" placeholder="Write a message">
+                            
                         </input>
                         <button type="submit">Send</button>
                     </form>

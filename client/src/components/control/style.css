@@ -1,64 +1,54 @@
 #controls {
-    position: absolute;
-    top: 50px;
-    width: 270px; height: 300px;
     padding: 5px;
     border: 1px solid black;
-    background-color: white;
+    background-color: #333333;
     user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
 }
 
+/* css tools */
+
 #tools {
+    position: absolute;
+    /* background-color: #333333; */
+    top: 36px;
     left: 0;
-    width: 100%;
+    width: 45px;
+    display: flex;
+    flex-direction: column;
+    /* position: absolute; */
 }
 
 .tool_button {
-    width: 48px; height: 48px;
-    border: 3px solid white;
-    background-size: contain;
+    width: 32px; height: 32px;
+    padding: 2px;
+    outline: none;
+    margin: 5px;
+    border: 1px solid #333333;
+    border-radius: 5px;
+    background-color : #333333;
+    text-align: center;
+    cursor: pointer;
+}
+
+.tool_button svg {
+    fill: white;
+    vertical-align: middle;
 }
 
 .tool_button.selected {
-    border-color: black;
+    background: black;
+    box-shadow: 0 0 5px #33ffff,
+                0 0 5px #33ffff;
 }
 
-.tool_button:disabled {
+.tool_button:hover {
     background-color: gray;
-    opacity: 0.5;
 }
-
-/* .tool_button:hover {
-    border: 3px solid red;
-} */
 
 .tool_button:disabled:hover {
     border-color: white;
-}
-
-#size {
-    width: 100%;
-}
-
-.slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 230px;
-    height: 15px;
-    background-color: rgb(218, 218, 218);
-    outline: none;
-    border-radius: 7px;
-}
-
-.slider::-webkit-slider-thumb, .slider::-moz-range-thumb {
-
-    border: 0;
-    width: 15px;
-    height: 15px;
-    background: rgb(103, 166, 238);
-    cursor: pointer;
 }
 
 #colourfield {
@@ -169,6 +159,222 @@
     border-color: black;
 }
 
-.tool_button {
-    background-color : white;
+.color-container{
+    background-color: #333333;
+    position: absolute;
+    right: 0px;
+    top: 40px;
+    padding-left: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    transition: 0.5s ease-in;
 }
+
+.color-container.active {
+    transform: translateX(90%);
+}
+
+.slide-color{
+    position: absolute;
+    left:0px;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transform: rotate(180deg);
+}
+
+.slide-color:hover{
+    color: cyan;
+}
+
+.slide-color.active {
+    transform: none;
+}
+
+#size input {
+    -webkit-appearance: none;
+    outline: none;
+    width: 100px;
+    height: 15px;
+    background-color: rgb(0, 0, 0);
+    outline: none;
+    border-radius: 7px;
+    color: white;
+    transform: translate(-29px, 50px) rotate(90deg) ;
+    cursor: pointer;
+}
+
+#size input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    background: cyan;
+    cursor: pointer;
+    color: white;
+    border-radius: 15px;
+}
+
+.slider::-moz-range-thumb {
+    height: 20px;
+    color: cyan;
+    width: 20px;
+    border-radius: 4px solid #3498db;
+}
+
+/* .slider::-webkit-slider-runnable-track {
+    background: red;
+    border-radius: 20px;
+    color:white;
+} */
+
+
+/* css services */
+
+#services {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+#services {
+    background: #1b1b1b;
+    box-sizing: border-box;
+    z-index: 1000;
+    position: fixed;
+    width: 100%;
+  }
+  
+  #services:after {
+    content: '';
+    clear: both;
+    display: table;
+  }
+  
+  #services ul {
+    float: left;
+    list-style: none;
+    margin-right: 40px;
+    position: relative; 
+  }
+  
+  #services ul li {
+    float: left;
+    display: inline-block;
+    background: #1b1b1b;
+    margin: 0 5px;  
+  }
+  
+  #services ul li a {
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 2rem;
+    font-size: 0.9rem;
+    padding: 3px 4px
+  }
+  
+  #services ul li a:hover {
+    color: cyan;
+    border-radius: 5px;
+    box-shadow: 0 0 5px #33ffff,
+                0 0 5px #33ffff;
+  }
+  
+  #services ul ul {
+    position: absolute;
+    top: 20px;
+    border-top: 1px solid cyan;
+    opacity: 0;
+    visibility: hidden;
+    transition: top .3s;
+  }
+  
+  #services ul ul ul {
+    border-top: none;
+  }
+  #services ul li:hover > ul {
+    top: 2rem;
+    opacity: 1;
+    visibility: visible;
+    /* width: 200px; */
+  }
+  #services ul ul li a:hover{
+    color: cyan;
+    box-shadow: none;
+  }
+  
+  #services ul ul li{
+    position: relative;
+    margin: 0px;
+    /* width:; */
+    float: none;
+    display: list-item;
+    border-bottom: 1px solid rgba(0,0,0,0.3);
+  }
+  
+  #services ul ul li a {
+    line-height: 2rem;
+  }
+  
+  #services ul ul ul li {
+    position: relative;
+    /* top: -70px; */
+    top: -2rem;
+    left: 3.5rem;
+  }
+
+.share-button{
+    display:inline-block;
+    float: right;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.5rem;
+    margin-right: 60px;
+    cursor: pointer;
+    padding: 3px 4px;
+    border-radius: 5px;
+    position: relative;
+}
+
+.share-button:hover{
+    color: cyan;
+    box-shadow: none;
+    box-shadow: 0 0 5px #33ffff,
+                0 0 5px #33ffff;
+}
+
+.share-button::after{
+    content: "Copied";
+    position: absolute;
+    bottom: -2.5rem;
+    color: white;
+    padding: 4px 6px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    right:0;
+    background-color: #1b1b1b;
+    display: none;
+}
+
+.share-button::before{
+    content: "";
+    position: absolute;
+    bottom: -1rem;
+    right:0px;
+    width:10px;
+    height: 10px;
+    right: 25px;
+    background: #1b1b1b;
+    transform: rotate(45deg);
+    display: none;
+}
+
+.share-button.active::before, 
+.share-button.active::after {
+    display: block;
+}
+

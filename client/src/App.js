@@ -9,6 +9,7 @@ import Newpassword from "./pages/newpassword/Newpassword";
 import Whiteboard from "./pages/whiteboard/Whiteboard";
 import PageNotFound from "./pages/error/PageNotFound";
 import OverloadPage from "./pages/error/OverloadPage";
+import {io} from 'socket.io-client';
 import { AuthContext } from "./helpers/AuthContext";
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -17,38 +18,13 @@ import Logo from './images/coding.png';
 import Navbar from './components/Navbar/Navbar';
 import NavItem from "./components/Navbar/NavItem";
 import DropdownMenu from './components/Navbar/DropdownMenu'
+const socket = io("http://localhost:8080");
 function App() {
-  const [authState, setAuthState] = useState({status: false});
-  useEffect(() => {
-    axios
-      .get("http://localhost:8080/auth/auth", {
-        headers: {
-          accessToken: localStorage.getItem("accessToken"),
-        },
-      })
-      .then((response) => {
-        if (response.data.error) {
-          setAuthState(false);
-        } else {
-          setAuthState(true);
-        }
-      });
-      
-  }, []);
+  const [authState, setAuthState] = useState({status: false, socket: socket});
   return (
     <div className="App">
       <AuthContext.Provider value={{ authState, setAuthState }}>
         <Router>
-          {
-            authState && (
-              <Navbar>  
-                <NavItem logo={Logo}/>
-                <NavItem icon={<CaretIcon />} > 
-                <DropdownMenu/>
-                </NavItem>
-              </Navbar>
-            )
-          }
           <Switch>
             <Route path="/" exact component={Home} />
             <Route path="/login" exact component={Login} />
@@ -59,7 +35,6 @@ function App() {
             <Route path="/overload" exact component={OverloadPage} />
             <Route path="*" exact component={PageNotFound}/>
           </Switch>
-          
         </Router>
       </AuthContext.Provider>
     </div>

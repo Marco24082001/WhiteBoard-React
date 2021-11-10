@@ -1,132 +1,96 @@
-/* CREATE NAVBAR */
-code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-      monospace;
-  }
-  
-  
-  :root {
-    --bg:  #484644;
-    --bg-accent: #484a4d;
-    --text-color: #dadce1;
-    --nav-size: 50px;
-    --border: 1px solid #474a4d;
-    --border-radius: 8px;
-    --speed: 500ms; 
-  }
-  
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  
-  a {
-    color: var(--text-color);
-    text-decoration: none;;
-  }
-  
-  /* Top Navigation Bar */
-  
-  /* <nav> */
-  .navbar {
-    height: var(--nav-size);
-    background-color: var(--bg);
-    padding: 0 4%;
-    border-bottom: var(--border);
-    z-index:100;
-  }
-  
-  /* <ul> */
-  .navbar-nav {
-    max-width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content:space-between;
-    /* padding: 0 5% 0 5%; */
-  }
-  
-  /* <li> */
-  .nav-item {
-    /* width: calc(var(--nav-size) * 0.8); */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-  }
-  
-  /* Icon Button */
-  .icon-button {
-    --button-size: calc(var(--nav-size) * 0.5);
-    width: var(--button-size);
-    height: var(--button-size);
-    background-color: #484a4d;
-    border-radius: 50%;
-    padding: 5px;
-    margin: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: filter 300ms;
-  }
-  
-  .icon-button:hover {
-    filter: brightness(1.2);
-  }
-  
-  .logo{
-    width:40px;
-    vertical-align: middle;
-  }
-  
-  .icon-button svg { 
-    fill: var(--text-color);
-    width: 25px;
-    height: 25px;
-  }
-  
-  
-  /* Dropdown Menu */
-  
-  .dropdown {
-    position: absolute;
-    top: 58px;
-    width: 300px;
-    transform: translateX(-45%);
-    background-color: var(--bg);
-    border: var(--border);
-    border-radius: var(--border-radius);
-    padding: 1rem;
-    overflow: hidden;
-    transition: height var(--speed) ease;
-  }
-  
-  .menu {
-    width: 100%;
-  }
-  
-  .menu-item {
-    height: 50px;
-    display: flex;
-    align-items: center;
-    border-radius: var(--border-radius);
-    transition: background var(--speed);
-    /* padding: 0.5rem; */
-  }
-  
-  .menu-item .icon-button {
-    margin-right: 0.5rem;
-  }
-  
-  
-  .menu-item .icon-button:hover {
-    filter: none;
-  }
-  
-  .menu-item:hover {
-    background-color: #525357;
-  }
-  
-  .icon-right {
-    margin-left: auto;
-  }
+.nav-bar {
+  background: #1b1b1b;
+  box-sizing: border-box;
+  z-index: 1000;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+}
+
+.nav-bar:after {
+  content: '';
+  clear: both;
+  display: table;
+}
+
+.nav-bar .logo {
+  float: left;
+  color: white;
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 70px;
+  padding-left: 60px;
+}
+
+.nav-bar ul {
+  float: right;
+  list-style: none;
+  margin-right: 40px;
+  position: relative; 
+}
+
+.nav-bar ul li {
+  float: left;
+  display: inline-block;
+  background: #1b1b1b;
+  margin: 0 5px;  
+}
+
+.nav-bar ul li a {
+  color: white;
+  text-decoration: none;
+  line-height: 70px;
+  font-size: 18px;
+  padding: 8px 15px
+}
+
+.nav-bar ul li a:hover {
+  color: cyan;
+  border-radius: 5px;
+  box-shadow: 0 0 5px #33ffff,
+              0 0 5px #33ffff;
+}
+
+.nav-bar ul ul {
+  position: absolute;
+  top: 90px;
+  border-top: 3px solid cyan;
+  opacity: 0;
+  visibility: hidden;
+  transition: top .3s
+}
+
+.nav-bar ul ul ul {
+  border-top: none;
+}
+.nav-bar ul li:hover > ul {
+  top: 70px;
+  opacity: 1;
+  visibility: visible;
+
+}
+.nav-bar ul ul li a:hover{
+  color: cyan;
+  box-shadow: none;
+}
+
+.nav-bar ul ul li{
+  position: relative;
+  margin: 0px;
+  width: 150px;
+  float: none;
+  display: list-item;
+  border-bottom: 1px solid rgba(0,0,0,0.3);
+}
+
+.nav-bar ul ul li a {
+  line-height: 50px;
+}
+
+.nav-bar ul ul ul li {
+  position: relative;
+  top: -70px;
+  left: 150px;
+
+}

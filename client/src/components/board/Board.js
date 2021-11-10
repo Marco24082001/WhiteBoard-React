@@ -1,39 +1,41 @@
-import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
+import React, { useRef, useEffect, useContext } from 'react';
 import axios from 'axios';
 import {useHistory } from "react-router-dom";
+import { AuthContext } from "../../helpers/AuthContext";
 import {io} from 'socket.io-client';
 import Control from '../control/Control';
 import Chat from '../chat/Chat';
 import './style.css';
 
+
 const Board = (props) => {
   const roomId = props.roomId;
-  console.log(props);
   const history = useHistory();
-
+  const {authState} = useContext(AuthContext);
   const canvasRef = useRef(null);
   const spreadCanvasRef = useRef(null);
-  const socketRef = useRef();
   const tool = useRef('pencil');
-  const color = useRef('black');
+  const color = useRef('#00000');
   const size = useRef(1);
   const timeout = useRef();
   const previous = useRef([]);
-
+  const socketRef = useRef();
+  const title = useRef();
+  
   //function update state
-  const onColorUpdate = (e) => {
-    color.current = e.target.id;
+  const onColorUpdate = (colour) => {
+    color.current = colour;
+    console.log(authState.socket);
   };
-  const onColorUpdateField = (e) => {
-    color.current = e.target.value;
-  }
+
   const onToolUpdate = (e) => {
-    tool.current = e.target.id;
+    tool.current = e.currentTarget.id;
   };
+
   const onSizeUpdate = (e) =>{
     size.current = e.target.value;  
   };
- 
+  
   // store data board to db
   const updateBoard = (blob) => {
     const data = {room: roomId, dataUrl: blob}
@@ -47,13 +49,42 @@ const Board = (props) => {
     })
   }
 
+  // refresh canvas
+  const refresh = () => {
+    const context = canvasRef.current.getContext('2d');
+    context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+  }
+
+  // download canvas
+  const download = (e) => {
+    if(window.navigator.msSaveBlob) {
+      window.navigator.msSaveBlob(canvasRef.current.msToBlob(), `${title.current}.png`)
+    }
+    else {
+      if(e.currentTarget.id === 'jpeg'){
+        const a = document.createElement('a');
+        document.body.appendChild(a);
+        a.href = canvasRef.current.toDataURL("image/jpeg", 0.2);
+        a.download = `${title.current}.jpg`;
+        a.click();
+        document.body.removeChild(a);
+      }else {
+        const a = document.createElement('a');
+        document.body.appendChild(a);
+        a.href = canvasRef.current.toDataURL();
+        a.download = `${title.current}.png`;
+        a.click();
+        document.body.removeChild(a);
+      }
+    }
+  }
+
   
   const username = "Thanh Vi";
 
   useEffect(() => {
-    socketRef.current = io("http://localhost:8080");
-    socketRef.current.emit('joinRoom', {roomId, username});
-    socketRef.current.on('error', (data) => {
+    authState.socket.emit('joinRoom', {roomId, username});
+    authState.socket.on('error', (data) => {
       console.log(data);
       history.push('/overload');
     })
@@ -66,9 +97,11 @@ const Board = (props) => {
         headers: { accessToken: localStorage.getItem("accessToken")},
       })
       .then((response) => {
-        onDrawingEvent(response.data);
+        onDrawingEvent(response.data.dataUrl);
+        title.current = response.data.title;
       })
     }
+
     getBoard(roomId);
   
     const canvas = canvasRef.current;
@@ -84,8 +117,8 @@ const Board = (props) => {
       if(timeout.current != undefined) clearTimeout(timeout.current)
           timeout.current = setTimeout(function() {
             let base64ImageData = canvas.toDataURL("image/png");
-            socketRef.current.emit("canvas-data", {roomId,base64ImageData});
-            console.log(base64ImageData.length);
+            authState.socket.emit("canvas-data", {roomId,base64ImageData});
+            console.log(base64ImageData);
             updateBoard(base64ImageData);
           }, 200);
     }
@@ -340,7 +373,7 @@ const Board = (props) => {
     window.addEventListener('resize', onResize, false);
     onResize();
 
-    // ----------------------- socket.io connection ----------------------------
+    // ----------------------- authState.socket.io connection ----------------------------
     const onDrawingEvent = (data) => {
       let image = new Image();
       image.onload = function(){
@@ -349,8 +382,8 @@ const Board = (props) => {
       image.src = data;
     };
 
-    socketRef.current.on('canvas-data', onDrawingEvent);
-    socketRef.current.on('share-data', emitCanvas)
+    authState.socket.on('canvas-data', onDrawingEvent);
+    authState.socket.on('share-data', emitCanvas)
     // onDrawingEvent(getBoard(roomId));
   }, []);
 
@@ -360,8 +393,8 @@ const Board = (props) => {
     <div id="whiteboard-container">
       <canvas ref={canvasRef} className="board" />
       <canvas ref= {spreadCanvasRef} className = "spreadboard" />
-      <Control onColorUpdate = {onColorUpdate} onColorUpdateField = {onColorUpdateField} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate}/>
-      <Chat socket={socketRef.current} roomId={roomId}/>
+      <Control onColorUpdate = {onColorUpdate} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate} roomId = {roomId} download={download} refresh={refresh}/>
+      <Chat roomId={roomId}/>
     </div>
   );
 };

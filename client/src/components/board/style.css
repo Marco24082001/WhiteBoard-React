@@ -9,7 +9,7 @@
     overflow-y: hidden;
     top: 0;
     left: 10;
-  } */
+  } */  
   .board {
     height: 100%;
     width: 100%;
@@ -32,18 +32,4 @@
     background-color: transparent;
     cursor: url("../../icons/record.png"), auto;
   }
-  .colors {
-    position: fixed;
-  }
   
-  .color {
-    display: inline-block;
-    height: 48px;
-    width: 48px;
-  }
-  
-  .color.black { background-color: black; }
-  .color.red { background-color: red; }
-  .color.green { background-color: green; }
-  .color.blue { background-color: blue; }
-  .color.yellow { background-color: yellow; }

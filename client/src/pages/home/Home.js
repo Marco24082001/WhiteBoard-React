@@ -4,6 +4,8 @@ import { useEffect, useState, useLayoutEffect, useContext } from "react";
 import { useHistory } from "react-router-dom";
 import { AuthContext } from "../../helpers/AuthContext";
 import {FaEllipsisH, FaTrashAlt,FaEdit} from "react-icons/fa";
+import Navbar from '../../components/Navbar/Navbar';
+
 import generate from 'shortid';
 import './style.css';
 
@@ -64,12 +66,21 @@ function Home() {
         if(response.data.error){
           alert(response.data.error);
         }else{
+
           window.location.reload(false);
         }
       })
   }
+
+  const handleKeypress_save = e => {
+    // console.log(authState.socket);
+    if(e.charCode === 13) {
+      editTitle();
+    }
+  }
   useEffect(() => {
     // window.location.reload(false);
+    console.log(authState.socket);
     if(!localStorage.getItem("accessToken")){
       history.push("/login")
     }else{
@@ -83,9 +94,10 @@ function Home() {
 
   return (
     <div className="homeContainer">
+      <Navbar/>
       <div id="id01" className="editTitleForm">
         <span>While board title</span>
-        <input id="title" type="text" placeholder="Input title" onChange={(e) => {console.log(e.target.value); setTitle(e.target.value)}}/>
+        <input id="title" type="text" placeholder="Input title" onChange={(e) => {console.log(e.target.value); setTitle(e.target.value)}} onKeyPress={handleKeypress_save}/>
         <button id="editbtn_save" class="editbtn" onClick={editTitle}>Save</button>
         <button id="editbtn_cancel" class="editbtn" onClick={unableTitle}>Cancel</button>
       </div>
@@ -114,9 +126,7 @@ function Home() {
               enableTitle(value.id);
             }}>
               <div className="editCaption" onClick={(e) => {enableTitle(value.id);}}><FaEdit style={{'width' : '30px', 'verticalAlign' : 'center'}}/>{
-                (value.title != "Untitled")?(
-                  <span>{value.title}<br/></span>
-                ):(<span>{value.title}</span>)
+                <span>{value.title}</span>
               }</div>
               <div className="dropdowns">
                 <span className="dropdownbtn" onClick={(e) => {

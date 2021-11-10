@@ -26,28 +26,8 @@ app.use(cors({
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true, parameterLimit: 50000}));
 
-// function onConnection(socket){
-//     console.log("user online");
-//     socket.on('canvas-data', (data) => {socket.broadcast.emit('canvas-data', data);});
-// }
-
-// function onDisconnect(socket){
-//     console.log("user leave");
-// }
-
-// function onDisconnect(i){
-//     const user = getCurrentUser(i.id);
-//     console.log("ra roi");
-//     console.log(i);
-//     // console.log(user);
-//     if(user) {
-//         Rooms.DecreaseRoom(user.room);
-//         // console.log(user)
-//         io.in(user.room).emit('message', `${user.username} is leave`);
-//     }
-// }
-
 function onConnection(socket){
+    console.log(socket.id);
     console.log("user online");
     socket.on('joinRoom', ({roomId, username}) => {
         // console.log(roomId);
@@ -57,8 +37,6 @@ function onConnection(socket){
             socket.join(roomId);
             Rooms.increaseRoom(roomId);
             userJoin(socket.id, username, roomId);
-            // socket.emit('message', 'welcom to white board');
-            // socket.broadcast.in(roomId).emit('message', 'a person has joined the board');
             socket.broadcast.in(roomId).emit('share-data', 'a person has joined the board');
         }
         else socket.emit('error', 'Board is full');
@@ -66,6 +44,7 @@ function onConnection(socket){
 
     // listen for canvas-data
     socket.on('canvas-data', (data) => {
+        console.log(socket.id);
         socket.to(data.roomId).emit('canvas-data', data.base64ImageData);
     })
 
@@ -76,11 +55,12 @@ function onConnection(socket){
     })
 
     socket.on('disconnect', () => {
+        console.log('user off');
         const user = getCurrentUser(socket.id);
         if(user) {
             Rooms.decreaseRoom(user.room);
             console.log('user leave');
-            io.in(user.room).emit('message', `${user.username} is leave`);
+            socket.broadcast.to(user.room).emit('message', {user:'others', msg: 'bye'});
         }
     })
 }
