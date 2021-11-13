@@ -2,14 +2,6 @@
     box-sizing: border-box;
   }
   
-  /* #whiteboard-container {
-    position: relative;
-    height: 100vh;
-    width: 100vh;
-    overflow-y: hidden;
-    top: 0;
-    left: 10;
-  } */  
   .board {
     height: 100%;
     width: 100%;
@@ -19,7 +11,7 @@
     bottom: 0;
     top: 0;
     background-color: white;
-    cursor:  url("../../icons/record.png"), auto;
+    
   }
   .spreadboard {
     height: 100%;
@@ -30,6 +22,6 @@
     bottom: 0;
     top: 0;
     background-color: transparent;
-    cursor: url("../../icons/record.png"), auto;
+    /* cursor: move; */
   }
   

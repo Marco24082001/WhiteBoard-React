@@ -2,7 +2,7 @@
 #chat-container .chat-box {
     transition: all 0.4s;
     position: absolute;
-    width: 270px;
+    width: 280px;
     height:350px;
     bottom: 0;
     background-color: #222;
@@ -26,8 +26,10 @@
 .chat-box-message {
     flex:1;
     color:white;
-    padding: 10px 20px;
+    padding: 10px 15px;
     overflow-y: scroll;
+    /* overflow-x: hidden; */
+    
 }
 .chat-box-message::-webkit-scrollbar {
     width: 2px;
@@ -38,21 +40,64 @@
     background: white;
     border-radius: 20px;
 }
+
+.message-box {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content:flex-start;
+    flex-direction: row;
+    background-color: #222;
+    padding: 5px 0;
+}
+
 .message{
     background-color: dodgerblue;
     padding: 5px 10px;
     color:white;
-    width: fit-content;
+    width: fit-content; 
     border-radius: 10px;
     margin-bottom: 10px;
     font-size: 0.8rem;
+    width: 85%;
     overflow-wrap: break-word;
+    margin: 0px 3px;
 }
 
-.user_message{
-    margin-left: auto;
+.username {
+    display: block;
+    font-size: 0.6rem;
+    color: rgb(105, 105, 105);
+}
+
+.username:hover {
+    cursor: pointer;
+    color: rgb(158, 153, 153);
+}
+
+.user_message {
+    justify-content:flex-end;
+}
+
+.user_message .message{
+    /* margin-left: auto; */
     background-color: white;
     color: black;
+    order: -1;
+    text-align: right;
+    /* margin-right: 5px; */
+}
+
+.user-photo{ 
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: cyan;
+    /* margin-left: 5px; */
+}
+
+.user-photo img {
+    width: 100%;
 }
 
 .chat-box-footer form {
@@ -65,14 +110,14 @@
     outline: none;
     padding-left: 10px;
     font-size: 0.9rem;
-    flex: 80%;
+    flex: 90%;
     padding-right: 2px;
     padding-top: 6px;
     padding-bottom: 6px;
 }
 
 .chat-box-footer form button {
-    width: 100px;
+    width: 80px;
     font-size: 0.8rem;
     border: none;
     outline: none;
@@ -100,16 +145,17 @@
     outline: none;
     border:none;
     cursor:pointer;
-    
+    background:transparent;
 }
 
 .toggleMessage{
     color: black;
-    background-color: white;
     vertical-align: middle ;
     font-size: 1.5rem;
+    background: transparent;
 }
 
-.toggleMessage span{
-    vertical-align: bottom;
+.toggleMessage:hover{
+    color: cyan;
 }
+

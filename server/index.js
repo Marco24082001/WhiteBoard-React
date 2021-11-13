@@ -27,7 +27,6 @@ app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true, parameterLimit: 50000}));
 
 function onConnection(socket){
-    console.log(socket.id);
     console.log("user online");
     socket.on('joinRoom', ({roomId, username}) => {
         // console.log(roomId);
@@ -44,14 +43,17 @@ function onConnection(socket){
 
     // listen for canvas-data
     socket.on('canvas-data', (data) => {
-        console.log(socket.id);
         socket.to(data.roomId).emit('canvas-data', data.base64ImageData);
+    })
+
+    socket.on('refresh', (data) => {
+        socket.to(data.roomId).emit('refresh', data);
     })
 
     // listen for chatMessage
     socket.on('chatMessage', (data) => {
         
-        socket.broadcast.to(data.roomId).emit('message',{user:'others', msg: data.msg});
+        socket.broadcast.to(data.roomId).emit('message',{user:data.user , msg: data.msg});
     })
 
     socket.on('disconnect', () => {

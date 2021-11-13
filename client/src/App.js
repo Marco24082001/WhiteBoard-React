@@ -12,12 +12,6 @@ import OverloadPage from "./pages/error/OverloadPage";
 import {io} from 'socket.io-client';
 import { AuthContext } from "./helpers/AuthContext";
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { ReactComponent as CaretIcon } from './icons/caret.svg';
-import Logo from './images/coding.png';
-import Navbar from './components/Navbar/Navbar';
-import NavItem from "./components/Navbar/NavItem";
-import DropdownMenu from './components/Navbar/DropdownMenu'
 const socket = io("http://localhost:8080");
 function App() {
   const [authState, setAuthState] = useState({status: false, socket: socket});

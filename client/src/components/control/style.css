@@ -317,14 +317,21 @@
   
   #services ul ul li a {
     line-height: 2rem;
+    font-size: 0.7rem;
   }
   
   #services ul ul ul li {
     position: relative;
     /* top: -70px; */
     top: -2rem;
-    left: 3.5rem;
+    left: 3rem;
+    
   }
+
+  #services ul ul ul li a {
+    font-size: 0.7rem;
+  }
+
 
 .share-button{
     display:inline-block;

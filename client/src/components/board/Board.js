@@ -7,6 +7,12 @@ import Control from '../control/Control';
 import Chat from '../chat/Chat';
 import './style.css';
 
+const api = axios.create({
+  baseURL: `http://localhost:8080/boards/`,
+  headers: {
+      accessToken: localStorage.getItem('accessToken')
+  }
+})
 
 const Board = (props) => {
   const roomId = props.roomId;
@@ -19,9 +25,34 @@ const Board = (props) => {
   const size = useRef(1);
   const timeout = useRef();
   const previous = useRef([]);
-  const socketRef = useRef();
   const title = useRef();
+  const dragimg = useRef(null);
   
+
+  // emit data
+  const emitCanvas = () => {
+    if(timeout.current != undefined) clearTimeout(timeout.current)
+        timeout.current = setTimeout(function() {
+          let base64ImageData = canvasRef.current.toDataURL("image/png");
+          authState.socket.emit("canvas-data", {roomId,base64ImageData});
+          updateBoard(base64ImageData);
+        }, 200);
+  }
+
+  // update cursor
+  const updateCursor = (cursor) => {
+    switch(cursor) {
+      case 'drag':
+        spreadCanvasRef.current.style.cursor = 'move';
+        break;
+      case 'pencil':
+        spreadCanvasRef.current.style.cursor = 'default';
+        break;
+      default:
+        spreadCanvasRef.current.style.cursor = 'default';
+    }
+  }
+
   //function update state
   const onColorUpdate = (colour) => {
     color.current = colour;
@@ -29,7 +60,25 @@ const Board = (props) => {
   };
 
   const onToolUpdate = (e) => {
+    //Check have any dragimg, draw to maincavas and remove dragimg
+    if(dragimg.current !== null) {
+      const ctx = canvasRef.current.getContext('2d');
+      const spreadctx = spreadCanvasRef.current.getContext('2d');
+      const delX = previous.current[1].x - previous.current[0].x;
+      const delY = previous.current[1].y - previous.current[0].y;
+      const img = new Image();
+      img.src = dragimg.current;
+      img.onload = () => {
+        ctx.drawImage(img, delX + canvasRef.current.width/2, delY + canvasRef.current.height/2);
+      }
+      dragimg.current = null;
+      previous.current = [];
+      spreadctx.clearRect(0,0, spreadCanvasRef.current.width, spreadCanvasRef.current.height);
+      emitCanvas();
+    }
     tool.current = e.currentTarget.id;
+    // update cursor
+    updateCursor(e.currentTarget.id);
   };
 
   const onSizeUpdate = (e) =>{
@@ -39,9 +88,7 @@ const Board = (props) => {
   // store data board to db
   const updateBoard = (blob) => {
     const data = {room: roomId, dataUrl: blob}
-    axios.put("http://localhost:8080/boards/updateboard/", data, {
-      headers: { accessToken: localStorage.getItem("accessToken")},
-    })
+    api.put("/updateboard", data)
     .then((res) => {
       if(res.data.error) {
         alert(res.data.error);
@@ -53,6 +100,7 @@ const Board = (props) => {
   const refresh = () => {
     const context = canvasRef.current.getContext('2d');
     context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    authState.socket.emit("refresh", {roomId});
   }
 
   // download canvas
@@ -79,7 +127,23 @@ const Board = (props) => {
     }
   }
 
-  
+  // upload image 
+  const uploadImage = (e) => {
+    const reader = new FileReader();
+    const img = new Image();
+    const ctx = spreadCanvasRef.current.getContext('2d');
+    reader.onload = () => {
+      img.onload = () => {
+        ctx.drawImage(img, spreadCanvasRef.current.width/2, spreadCanvasRef.current.height/2);
+      };
+      img.src = reader.result;
+      dragimg.current = reader.result;
+      
+    };
+    reader.readAsDataURL(e.currentTarget.files[0]);
+    document.getElementById('drag').click();
+  }
+
   const username = "Thanh Vi";
 
   useEffect(() => {
@@ -93,12 +157,17 @@ const Board = (props) => {
   useEffect(() => {
     // retrive data board when access
     const getBoard = (roomId) => {
-      axios.get(`http://localhost:8080/boards/${roomId}`,{ 
-        headers: { accessToken: localStorage.getItem("accessToken")},
-      })
+      api.get(`/${roomId}`)
       .then((response) => {
-        onDrawingEvent(response.data.dataUrl);
-        title.current = response.data.title;
+        if(response.data.dataUrl !== null){
+          onDrawingEvent(response.data.dataUrl);
+          title.current = response.data.title;
+        }
+        else {
+          const ctx = canvasRef.current.getContext('2d');
+          ctx.fillStyle = "white";
+          ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        }
       })
     }
 
@@ -113,15 +182,6 @@ const Board = (props) => {
     const current = {};
 
     let drawing = false;
-    const emitCanvas = () => {
-      if(timeout.current != undefined) clearTimeout(timeout.current)
-          timeout.current = setTimeout(function() {
-            let base64ImageData = canvas.toDataURL("image/png");
-            authState.socket.emit("canvas-data", {roomId,base64ImageData});
-            console.log(base64ImageData);
-            updateBoard(base64ImageData);
-          }, 200);
-    }
     // ------------------------------- create the drawing ----------------------------
 
     const tools = {
@@ -137,6 +197,7 @@ const Board = (props) => {
           ctx.lineJoin = "round";
           ctx.stroke();
           ctx.closePath();
+          console.log(data.color);
           if (!data.emit) { return; }
           emitCanvas();
         } 
@@ -147,7 +208,7 @@ const Board = (props) => {
           ctx.beginPath();
           ctx.moveTo(data.x0, data.y0);
           ctx.lineTo(data.x1, data.y1);
-          ctx.strokeStyle = 'white';
+          ctx.strokeStyle = '#ffffff';
           ctx.lineWidth = data.size;
           ctx.lineCap = "round";
           ctx.lineJoin = "round";
@@ -173,7 +234,7 @@ const Board = (props) => {
           spreadctx.beginPath();
           spreadctx.moveTo(previous.current[0].x, previous.current[0].y);
           spreadctx.lineTo(previous.current[1].x, previous.current[1].y);
-          spreadctx.strokeStyle = color.current;
+          spreadctx.strokeStyle = data.color;
           spreadctx.lineWidth = data.size;
           spreadctx.lineCap = "round";
           spreadctx.lineJoin = "round";
@@ -185,7 +246,7 @@ const Board = (props) => {
             ctx.beginPath();
             ctx.moveTo(previous.current[0].x, previous.current[0].y);
             ctx.lineTo(previous.current[1].x, previous.current[1].y);
-            ctx.strokeStyle = color.current;
+            ctx.strokeStyle = data.color;
             ctx.lineWidth = data.size;
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
@@ -224,7 +285,7 @@ const Board = (props) => {
           spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
           spreadctx.beginPath();
           spreadctx.rect(x, y, width, height);
-          spreadctx.strokeStyle = color.current;
+          spreadctx.strokeStyle = data.color;
           spreadctx.lineWidth = data.size;
           spreadctx.lineCap = "round";
           spreadctx.lineJoin = "round";
@@ -236,7 +297,7 @@ const Board = (props) => {
             spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
             ctx.beginPath();
             ctx.rect(x, y, width, height);
-            ctx.strokeStyle = color.current;
+            ctx.strokeStyle = data.color;
             ctx.lineWidth = data.size;
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
@@ -266,7 +327,7 @@ const Board = (props) => {
           spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
           spreadctx.beginPath();
           spreadctx.arc(previous.current[0].x, previous.current[0].y, radius, 0, 2 * Math.PI);
-          spreadctx.strokeStyle = color.current;
+          spreadctx.strokeStyle = data.color;
           spreadctx.lineWidth = data.size;
           spreadctx.lineCap = "round";
           spreadctx.lineJoin = "round";
@@ -278,7 +339,7 @@ const Board = (props) => {
             spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
             ctx.beginPath();
             ctx.arc(previous.current[0].x, previous.current[0].y, radius, 0, 2 * Math.PI);
-            ctx.strokeStyle = color.current;
+            ctx.strokeStyle = data.color;
             ctx.lineWidth = data.size;
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
@@ -287,6 +348,32 @@ const Board = (props) => {
             previous.current = [];
             if (!data.emit) { return; }
             emitCanvas();
+          }
+        }
+      },
+
+      'drag': {
+        draw: (data) => {
+          if(dragimg.current !== null){
+            if(previous.current.length === 0) {
+              previous.current.push({x: data.x0, y: data.y0}, {x: data.x0, y: data.y0});
+            }else{
+              const index = previous.current.length - 1;
+              const copyPrevious = [...previous.current];
+              copyPrevious[index] = {x: data.x1, y: data.y1};
+              previous.current = copyPrevious;
+            }
+  
+            const delX = previous.current[1].x - previous.current[0].x;
+            const delY = previous.current[1].y - previous.current[0].y;
+            const img = new Image();
+            img.src = dragimg.current;
+            img.onload = () => {
+              setTimeout(() => {
+                spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
+                spreadctx.drawImage(img, delX + spreadCanvas.width/2, delY + spreadCanvas.height/2);
+              }, 200);
+            }
           }
         }
       }
@@ -383,7 +470,11 @@ const Board = (props) => {
     };
 
     authState.socket.on('canvas-data', onDrawingEvent);
-    authState.socket.on('share-data', emitCanvas)
+    authState.socket.on('share-data', emitCanvas);
+    authState.socket.on('refresh', () => {
+      const context = canvasRef.current.getContext('2d');
+      context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    });
     // onDrawingEvent(getBoard(roomId));
   }, []);
 
@@ -393,7 +484,7 @@ const Board = (props) => {
     <div id="whiteboard-container">
       <canvas ref={canvasRef} className="board" />
       <canvas ref= {spreadCanvasRef} className = "spreadboard" />
-      <Control onColorUpdate = {onColorUpdate} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate} roomId = {roomId} download={download} refresh={refresh}/>
+      <Control onColorUpdate = {onColorUpdate} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate} roomId = {roomId} download={download} refresh={refresh} uploadImage={uploadImage}/>
       <Chat roomId={roomId}/>
     </div>
   );
