@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useEffect, useState, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
 import { AuthContext } from '../../helpers/AuthContext';
-import {ToastContainer, toast} from 'react-toastify';
+import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {FaTrashAlt,FaEdit} from 'react-icons/fa';
 import Navbar from '../../components/Navbar/Navbar';
@@ -11,10 +11,7 @@ import generate from 'shortid';
 import './style.css';
 
 const api = axios.create({
-  baseURL: `http://localhost:8080/boards/`,
-  headers: {
-      accessToken: localStorage.getItem('accessToken')
-  }
+  baseURL: `${process.env.REACT_APP_API}/boards/`,
 })
 
 function Home() {
@@ -32,18 +29,22 @@ function Home() {
   const createBoard = () =>{
     const newBoard = {title:'Untitled', room: generate(), postText:'...'};
     api
-      .post('/create', newBoard)
+      .post('create', newBoard, {  headers: {
+        accessToken: localStorage.getItem('accessToken')
+    }})
       .then((response) => {
         if(response.data.error){
           alert(response.data.error);
         }else{
-          history.push(`/board/${response.data.room}`);
+          history.push(`board/${response.data.room}`);
         }
       })
   }
   
   const deleteBoard = (boardId) => {
-    api.delete(`/delete/${boardId}`).then((response) => {
+    api.delete(`delete/${boardId}`, {  headers: {
+      accessToken: localStorage.getItem('accessToken')
+  }}).then((response) => {
       if(response.data.error){
         diffToast(response.data.error);
       }else{
@@ -67,7 +68,9 @@ function Home() {
   const editTitle = () => {
     const data = {boardId: boardId, title: title};
     api
-      .put('/updatetitle', data)
+      .put('updatetitle', {  headers: {
+        accessToken: localStorage.getItem('accessToken')
+    }}, data)
       .then((response) => {
         if(response.data.error){
           diffToast(response.data.error);
@@ -83,21 +86,27 @@ function Home() {
       editTitle();
     }
   }
-  useEffect(() => {
+  useEffect(async () => {
     // window.location.reload(false);
-    console.log(authState.socket);
     if(!localStorage.getItem('accessToken')){
       history.push('/login')
     }else{
-      api.get('/all').then((response) => {
-        setListOfBoards(response.data);
+      api.get('all', {  headers: {
+        accessToken: localStorage.getItem('accessToken')
+    }}).then((response) => {
+        if(!response.data.error) {
+          setListOfBoards(response.data);
+        }
+        else {
+          console.log(response.data.error);
+        }
+        
       })
     }
   }, []);
 
   return (
     <>
-      <ToastContainer />
       <div className='homeContainer'>
         <Navbar/>
         <div id='id01' className='editTitleForm'>

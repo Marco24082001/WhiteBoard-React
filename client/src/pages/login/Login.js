@@ -1,8 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import {ToastContainer, toast} from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import {toast} from 'react-toastify';
 import { Link, useHistory } from 'react-router-dom';
 import { AuthContext } from '../../helpers/AuthContext';
 import isEmpty from 'validator/lib/isEmpty';
@@ -11,7 +10,7 @@ import logodut from '../../images/logodut.png';
 import './style.css';
 
 const api = axios.create({
-  baseURL: `http://localhost:8080/auth/`,
+  baseURL: `${process.env.REACT_APP_API}/auth/`,
 })
 
 function Login() {
@@ -81,20 +80,20 @@ function Login() {
     return true;
   }
 
-  const login = () => {
+  const login = async () => {
     const isValid = validateLg();
     if(!isValid) return;
     const data = { email: email, password: password };
-    api.post('/login', data).then((response) => {
+    api.post('login', data).then((response) => {
       if (response.data.error) {
         diffToast(response.data.error);
         // alert(response.data.error);
       } else {
-        localStorage.setItem('accessToken', response.data);
+        localStorage.setItem('accessToken', response.data); 
         setAuthState((previousState) => {
           return {...previousState, status: true}
         });
-        if(room.id !== undefined) history.push(`/board/${room.id}`)
+        if(room.id !== undefined) history.push(`board/${room.id}`)
         else history.push('/');
       }
     });
@@ -105,9 +104,9 @@ function Login() {
   const register = () =>{
     const isValid = validateRg();
     if(!isValid) return;
-    const data = { username: username, email: email, password: password, repeat_password: repeat_password};
+    const data = { username: username, email: email, password: password, photo: 'https://res.cloudinary.com/h-b-ch-khoa/image/upload/v1636871977/question_xfpegi.png'};
     console.log(data);
-    api.post('/', data).then((response) => {
+    api.post('', data).then((response) => {
       if (response.data.error) {
         diffToast(response.data.error);
       } else {
@@ -134,7 +133,6 @@ function Login() {
 
   return (
     <>
-      <ToastContainer />
       <div className='login-container'>
         <div className='about-wrap'>
           <div className='about-html'>

@@ -95,7 +95,7 @@
   left: 150px;
 }
 
-.user_photo {
+#user_photo {
   vertical-align: middle;
   width: 40px;
   border: 1px solid;
@@ -104,14 +104,15 @@
   margin: 0;
 }
 
-.user_photo:hover {
+#user_photo:hover {
   border: 1px solid cyan;
   cursor: pointer;
   box-shadow: 0 0 5px #33ffff,
               0 0 5px #33ffff;
 }
 
-.user-setting {
+#user-setting {
+  width: 450px;
   top: 0px;
   color: white;
   background-color: #1b1b1b;
@@ -119,12 +120,18 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 10000;
-  padding: 10px 15px;
-  text-align: center;
+  padding: 20px 25px;
+  display: none;
+  border-radius: 10px;
 }
 
-.user-setting h2 {
+#user-setting.active {
+  display: block;
+}
+
+#user-setting h2 {
   margin-bottom: 15px;
+  text-align: center;
 }
 
 
@@ -143,6 +150,7 @@
 } */
 
 .form-group input {
+    width: 250px;
     padding: 5px 10px;
     height: 33px;
     font-size: 14px;
@@ -159,6 +167,7 @@
   border-radius: 50%;
   position: relative;
   overflow: hidden;
+  text-align: center;
 }
 
 #uploadbtn {

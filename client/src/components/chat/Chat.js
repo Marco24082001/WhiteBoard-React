@@ -3,27 +3,32 @@ import axios from 'axios';
 import { AuthContext } from '../../helpers/AuthContext';
 import {FaComment, FaComments, FaChevronDown} from 'react-icons/fa';
 import user from '../../images/question.png';
+import {toast} from 'react-toastify';
 import './style.css';
 
 const api = axios.create({
-    baseURL: `http://localhost:8080/auth/`,
-    headers: {
-        accessToken: localStorage.getItem('accessToken')
-    }
+    baseURL: `${process.env.REACT_APP_API}/auth/`,
 })
+
 function Chat(props) {
     const {authState} = useContext(AuthContext);
     const username = useRef(null);
     const roomId = props.roomId;
+    const photo = useRef(null);
+
+    const diffToast = (msg) => {
+        toast(msg);
+    }
     const send_msg = e =>{
         e.preventDefault();
         // Get message
         const msg = e.target.elements.msg.value;
         const user = username.current;
-        outputMessage({user: '___me___' , msg: e.target.elements.msg.value});
+        const photoUrl = photo.current;
+        outputMessage({user: '___me___' , msg: e.target.elements.msg.value, photo: photo.current});
 
         // Emit message to server
-        authState.socket.emit('chatMessage', {roomId, msg, user});
+        authState.socket.emit('chatMessage', {roomId, msg, user, photoUrl});
         e.target.elements.msg.value = '';
         e.target.elements.msg.focus();
     }
@@ -39,7 +44,8 @@ function Chat(props) {
             div1.classList.add('user-photo');
             p.classList.add('message');
             p.innerHTML = `<span class='username'>${username.current}</span>${data.msg}`;
-            img.src = user;
+            console.log(username.current)
+            img.src = data.photo;
             div1.appendChild(img);
             div.appendChild(div1);
             div.appendChild(p);
@@ -56,7 +62,7 @@ function Chat(props) {
             div1.classList.add('user-photo');
             p.classList.add('message');
             p.innerHTML = `<span class='username'>${data.user}</span>${data.msg}`;
-            img.src = user;
+            img.src = data.photo;
             div1.appendChild(img);
             div.appendChild(div1);
             div.appendChild(p);
@@ -78,10 +84,24 @@ function Chat(props) {
     useEffect(() => {
         // get username
         if(localStorage.getItem('accessToken')){
-            api.get('/auth').then((response) => {
-              username.current = response.data.username;
+            api.get('auth', {
+                headers: {accessToken: localStorage.getItem('accessToken')}
+                }).then((response) => {
+                username.current = response.data.username;
+                console.log(response.data);
+            });
+
+            api.get('photo', {
+                headers: { accessToken: localStorage.getItem("accessToken")},
+                }).then(res => {
+                    if(res.data.error) diffToast(res.data.error);
+                    else {
+                        photo.current = res.data.photo;
+                }
             })
-          }
+        }
+        
+        
 
         authState.socket.on('message', data => {
             outputMessage(data);
@@ -100,14 +120,14 @@ function Chat(props) {
                     <span onClick={showMessage}><FaChevronDown/></span>
                 </div>
                 <div className='chat-box-message'>
-                    <div className='message-box '>
+                    {/* <div className='message-box '>
                         <div className='user-photo'><img src={user}></img></div>
                         <p className='message'><span className='username'>Thanh vi</span>Hello</p>
                     </div>
                     <div className='message-box user_message'>
                         <div className='user-photo'><img src={user}></img></div>
                         <p className='message'><span className='username'>Thanh vi</span>Hi</p>
-                    </div>
+                    </div> */}
                 </div>
                 <div className='chat-box-footer'>
                     <form onSubmit={send_msg}>

@@ -203,7 +203,7 @@
     outline: none;
     border-radius: 7px;
     color: white;
-    transform: translate(-29px, 50px) rotate(90deg) ;
+    transform: translate(-29px, 50px) rotate(-90deg) ;
     cursor: pointer;
 }
 

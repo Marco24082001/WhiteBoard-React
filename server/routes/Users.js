@@ -14,8 +14,9 @@ const transporter = nodemailer.createTransport(sendgridTransport({
     api_key: process.env.API_MAIL_KEY
   }
 }))
+
 router.post("/", async (req, res) => {
-  const { username, password, email } = req.body;
+  const { username, password, email, photo } = req.body;
   const _user = await Users.findOne({ where: { email: email } });
   if(_user) return res.json({ error: "Email has existed" });
   bcrypt.hash(password, 10).then((hash) => {
@@ -23,6 +24,7 @@ router.post("/", async (req, res) => {
       username: username,
       password: hash,
       email: email,
+      photo: photo
     });
     const user = Users.findOne({ where: { email: email } });
     transporter.sendMail({
@@ -60,6 +62,16 @@ router.post("/login", async (req, res) => {
 router.get("/auth", validateToken, (req, res) => {
   res.json(req.user);
 });
+
+router.get('/photo', validateToken, (req, res) => {
+  Users.findOne({
+    where: {
+      id: req.user.id
+  },
+    attributes: ['photo'],
+  }).then((photo) => res.json(photo))
+    .catch((err) => res.json({error: 'fail'}));
+})
 
 router.post("/reset-password", (req, res) => {
   crypto.randomBytes(32, async (err, buffer) => {
@@ -104,6 +116,24 @@ router.post("/new-password", async (req, res) => {
   }).catch(err => {
     console.log(err);
   });
+})
+
+router.put('/setting-info', validateToken, async (req, res) => {
+  const {username, photo} = req.body;
+  await Users.update(
+    {
+      username: username,
+      photo: photo,
+    },
+    {
+      where: {id: req.user.id}
+    }
+  )
+  const accessToken = sign(
+    { username: username, id: req.user.id },
+    "importantsecret"
+  );
+  return res.json(accessToken);
 })
 
 module.exports = router;

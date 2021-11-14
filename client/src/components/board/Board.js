@@ -8,10 +8,7 @@ import Chat from '../chat/Chat';
 import './style.css';
 
 const api = axios.create({
-  baseURL: `http://localhost:8080/boards/`,
-  headers: {
-      accessToken: localStorage.getItem('accessToken')
-  }
+  baseURL: `${process.env.REACT_APP_API}/boards/`
 })
 
 const Board = (props) => {
@@ -88,7 +85,9 @@ const Board = (props) => {
   // store data board to db
   const updateBoard = (blob) => {
     const data = {room: roomId, dataUrl: blob}
-    api.put("/updateboard", data)
+    api.put("updateboard/", data, {
+      headers: { accessToken: localStorage.getItem("accessToken")},
+    })
     .then((res) => {
       if(res.data.error) {
         alert(res.data.error);
@@ -157,7 +156,9 @@ const Board = (props) => {
   useEffect(() => {
     // retrive data board when access
     const getBoard = (roomId) => {
-      api.get(`/${roomId}`)
+      api.get(`/${roomId}`,{ 
+        headers: { accessToken: localStorage.getItem("accessToken")},
+      })
       .then((response) => {
         if(response.data.dataUrl !== null){
           onDrawingEvent(response.data.dataUrl);

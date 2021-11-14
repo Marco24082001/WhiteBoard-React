@@ -53,7 +53,7 @@ function onConnection(socket){
     // listen for chatMessage
     socket.on('chatMessage', (data) => {
         
-        socket.broadcast.to(data.roomId).emit('message',{user:data.user , msg: data.msg});
+        socket.broadcast.to(data.roomId).emit('message',{user:data.user , msg: data.msg, photo: data.photoUrl});
     })
 
     socket.on('disconnect', () => {
@@ -62,7 +62,6 @@ function onConnection(socket){
         if(user) {
             Rooms.decreaseRoom(user.room);
             console.log('user leave');
-            socket.broadcast.to(user.room).emit('message', {user:'others', msg: 'bye'});
         }
     })
 }

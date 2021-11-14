@@ -7,7 +7,7 @@ import { AuthContext } from "../../helpers/AuthContext";
 import {io} from 'socket.io-client';
 import './style.css'
 
-const URL = `http://localhost:3000`;
+const URL = `${process.env.REACT_APP_API}`;
 // import { ReactComponent as LogIcon } from '../../icons/circle.svg';
 // rfce
 function Control({onColorUpdate, onSizeUpdate, onToolUpdate, roomId, download, refresh, uploadImage}) {

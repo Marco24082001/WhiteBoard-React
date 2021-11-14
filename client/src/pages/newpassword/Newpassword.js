@@ -5,7 +5,7 @@ import { AuthContext } from '../../helpers/AuthContext';
 import isEmpty from 'validator/lib/isEmpty';
 
 const api = axios.create({
-  baseURL: `http://localhost:8080/auth/`,
+  baseURL: `${process.env.REACT_APP_API}/auth/`,
 })
 
 function Newpassword() {
@@ -38,7 +38,7 @@ function Newpassword() {
     const isValid = validatePw();
     if(!isValid) return;
     const data = { password: password, token:token };
-    api.post('/new-password', data).then((response) => {
+    api.post('new-password', data).then((response) => {
       if (response.data.error) {
         alert(response.data.error);
       } else {
