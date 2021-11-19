@@ -19,7 +19,7 @@ const Board = (props) => {
   const spreadCanvasRef = useRef(null);
   const tool = useRef('pencil');
   const color = useRef('#00000');
-  const size = useRef(1);
+  const size = useRef(10);
   const timeout = useRef();
   const previous = useRef([]);
   const title = useRef();
@@ -43,10 +43,10 @@ const Board = (props) => {
         spreadCanvasRef.current.style.cursor = 'move';
         break;
       case 'pencil':
-        spreadCanvasRef.current.style.cursor = 'default';
+        spreadCanvasRef.current.style.cursor = 'none';
         break;
       default:
-        spreadCanvasRef.current.style.cursor = 'default';
+        spreadCanvasRef.current.style.cursor = 'none';
     }
   }
 
@@ -159,10 +159,10 @@ const Board = (props) => {
       api.get(`/${roomId}`,{ 
         headers: { accessToken: localStorage.getItem("accessToken")},
       })
-      .then((response) => {
-        if(response.data.dataUrl !== null){
-          onDrawingEvent(response.data.dataUrl);
-          title.current = response.data.title;
+      .then((res) => {
+        if(res.data.dataUrl !== null){
+          onDrawingEvent(res.data.dataUrl);
+          title.current = res.data.title;
         }
         else {
           const ctx = canvasRef.current.getContext('2d');

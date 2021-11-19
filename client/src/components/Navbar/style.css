@@ -6,6 +6,11 @@
   left: 0;
   top: 0;
   width: 100%;
+  opacity: 0;
+}
+
+.nav-bar:hover {
+  opacity: 1;
 }
 
 .nav-bar:after {

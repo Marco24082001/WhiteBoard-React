@@ -37,11 +37,11 @@ function Forgot() {
     const isValid = validateEmail();
     if(!isValid) return;
     const data = { email: email };
-    api.post('reset-password', data).then((response) => {
-      if (response.data.error) {
-        diffToast(response.data.error);
+    api.post('reset-password', data).then((res) => {
+      if (res.data.error) {
+        diffToast(res.data.error);
       } else {
-        diffToast(response.data.message);
+        diffToast(res.data.message);
         history.push('/login');
       }
     });

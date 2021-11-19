@@ -84,12 +84,12 @@ function Login() {
     const isValid = validateLg();
     if(!isValid) return;
     const data = { email: email, password: password };
-    api.post('login', data).then((response) => {
-      if (response.data.error) {
-        diffToast(response.data.error);
-        // alert(response.data.error);
+    api.post('login', data).then((res) => {
+      if (res.data.error) {
+        diffToast(res.data.error);
+        // alert(res.data.error);
       } else {
-        localStorage.setItem('accessToken', response.data); 
+        localStorage.setItem('accessToken', res.data); 
         setAuthState((previousState) => {
           return {...previousState, status: true}
         });
@@ -106,11 +106,11 @@ function Login() {
     if(!isValid) return;
     const data = { username: username, email: email, password: password, photo: 'https://res.cloudinary.com/h-b-ch-khoa/image/upload/v1636871977/question_xfpegi.png'};
     console.log(data);
-    api.post('', data).then((response) => {
-      if (response.data.error) {
-        diffToast(response.data.error);
+    api.post('', data).then((res) => {
+      if (res.data.error) {
+        diffToast(res.data.error);
       } else {
-        localStorage.setItem('accessToken', response.data);
+        localStorage.setItem('accessToken', res.data);
         setAuthState((previousState) => {
           return {...previousState, status: true};
         });

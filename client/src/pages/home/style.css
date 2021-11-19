@@ -1,15 +1,18 @@
 
 .homeContainer {
     --gap: -10px;
-    background-color: rgb(22, 33, 44);
-    gap: 45px;
+    /* background-color: rgb(22, 33, 44); */
+    background-image: url('../../images/bg.jpg');
+    background-repeat:no-repeat;
+    background-size: contain;
+    background-position: center center;
+    gap: 44px;
     display: flex;
     flex-wrap: wrap;
-    height:100%;
-    /* margin: calc(-1 * var(--gap)) 0 0 calc(-1 * var(--gap)); */
-    /* width: calc(100% + var(--gap)); */
+    height:100vh;   
     justify-content:flex-start;
     padding:6%;
+    overflow-y:scroll;
 }
 
 

@@ -105,9 +105,11 @@ function Navbar(props) {
   useEffect(() => {
     api.get('auth', {
       headers: {accessToken: localStorage.getItem('accessToken')}
-      }).then((response) => {
-        document.getElementById('username').value = response.data.username;
-        setUsername(response.data.username);
+      }).then((res) => {
+        if(!res.data.error){
+          document.getElementById('username').value = res.data.username;
+          setUsername(res.data.username);
+        }
     });
 
     api.get('photo', {

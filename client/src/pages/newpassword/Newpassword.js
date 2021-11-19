@@ -38,11 +38,11 @@ function Newpassword() {
     const isValid = validatePw();
     if(!isValid) return;
     const data = { password: password, token:token };
-    api.post('new-password', data).then((response) => {
-      if (response.data.error) {
-        alert(response.data.error);
+    api.post('new-password', data).then((res) => {
+      if (res.data.error) {
+        alert(res.data.error);
       } else {
-        localStorage.setItem('accessToken', response.data);
+        localStorage.setItem('accessToken', res.data);
         setAuthState(true);
         history.push('/');
       }

@@ -17,6 +17,7 @@
     width: 45px;
     display: flex;
     flex-direction: column;
+    z-index: 4;
     /* position: absolute; */
 }
 
@@ -171,6 +172,7 @@
     flex-direction: row;
     align-items: center;
     transition: 0.5s ease-in;
+    z-index: 4;
 }
 
 .color-container.active {
@@ -242,7 +244,7 @@
 #services {
     background: #1b1b1b;
     box-sizing: border-box;
-    z-index: 1000;
+    z-index: 3;
     position: fixed;
     width: 100%;
   }
@@ -385,3 +387,13 @@
     display: block;
 }
 
+.cursor {
+    background:transparent;
+    border: 1px solid #000000;
+    border-radius: 50%;
+    position: fixed;
+    left: 200px;
+    top: 200px;
+    pointer-events: none;
+    z-index: 1;
+}

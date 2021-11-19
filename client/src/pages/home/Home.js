@@ -32,11 +32,11 @@ function Home() {
       .post('create', newBoard, {  headers: {
         accessToken: localStorage.getItem('accessToken')
     }})
-      .then((response) => {
-        if(response.data.error){
-          alert(response.data.error);
+      .then((res) => {
+        if(res.data.error){
+          alert(res.data.error);
         }else{
-          history.push(`board/${response.data.room}`);
+          history.push(`board/${res.data.room}`);
         }
       })
   }
@@ -44,9 +44,9 @@ function Home() {
   const deleteBoard = (boardId) => {
     api.delete(`delete/${boardId}`, {  headers: {
       accessToken: localStorage.getItem('accessToken')
-  }}).then((response) => {
-      if(response.data.error){
-        diffToast(response.data.error);
+  }}).then((res) => {
+      if(res.data.error){
+        diffToast(res.data.error);
       }else{
         diffToast('deleta success');
         window.location.reload(false);
@@ -71,9 +71,9 @@ function Home() {
       .put('updatetitle', {  headers: {
         accessToken: localStorage.getItem('accessToken')
     }}, data)
-      .then((response) => {
-        if(response.data.error){
-          diffToast(response.data.error);
+      .then((res) => {
+        if(res.data.error){
+          diffToast(res.data.error);
         }else{
           window.location.reload(false);
         }
@@ -93,12 +93,12 @@ function Home() {
     }else{
       api.get('all', {  headers: {
         accessToken: localStorage.getItem('accessToken')
-    }}).then((response) => {
-        if(!response.data.error) {
-          setListOfBoards(response.data);
+    }}).then((res) => {
+        if(!res.data.error) {
+          setListOfBoards(res.data);
         }
         else {
-          console.log(response.data.error);
+          console.log(res.data.error);
         }
         
       })

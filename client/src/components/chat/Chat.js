@@ -86,9 +86,9 @@ function Chat(props) {
         if(localStorage.getItem('accessToken')){
             api.get('auth', {
                 headers: {accessToken: localStorage.getItem('accessToken')}
-                }).then((response) => {
-                username.current = response.data.username;
-                console.log(response.data);
+                }).then((res) => {
+                username.current = res.data.username;
+                console.log(res.data);
             });
 
             api.get('photo', {
