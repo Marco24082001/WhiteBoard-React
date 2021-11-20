@@ -1,28 +1,52 @@
 import React from 'react'
 import { useHistory } from "react-router-dom";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { SketchPicker } from 'react-color';
-import {FaChevronLeft} from 'react-icons/fa';
+import {FaChevronLeft, FaBan, FaRegUser} from 'react-icons/fa';
+import {MdOutlineAdminPanelSettings, MdAdminPanelSettings} from 'react-icons/md';
+import {RiUserSharedFill, RiUserStarFill} from 'react-icons/ri';
+import axios from 'axios';
+import {toast} from 'react-toastify';
 import { AuthContext } from "../../helpers/AuthContext";
 import {io} from 'socket.io-client';
 import './style.css'
 
-const URL = `${process.env.REACT_APP_API}`;
+const URL = `${process.env.REACT_APP_API}`;const apiBoard = axios.create({
+    baseURL: `${process.env.REACT_APP_API}/boards/`
+})
+  
+const apiParticipations = axios.create({
+    baseURL: `${process.env.REACT_APP_API}/participations/`,
+});
+
+
+const apiUser = axios.create({
+    baseURL: `${process.env.REACT_APP_API}/users/`
+})
+  
 // import { ReactComponent as LogIcon } from '../../icons/circle.svg';
 // rfce
-function Control({onColorUpdate, onSizeUpdate, onToolUpdate, roomId, download, refresh, uploadImage}) {
+function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, uploadImage, roomId}) {
     const [color, setColor] = useState("lightblue");
     const [cursorX, setCursorX] = useState();
     const [cursorY, setCursorY] = useState();
+    const [listOfUsers, setListOfUsers] = useState([]);
     const [size, setSize] = useState(10);
+    const control = useRef();
     let history = useHistory();
+    const listOfAdmin = useRef();
+    const user = useRef();
+    const [username, setUsername] = useState('Me');
+    const owner = useRef();
+    const roleId = useRef();
+    const boardId = useRef();
     const linkURL = `${URL}/${roomId}`
     const { authState, setAuthState } = useContext(AuthContext);
 
-    window.addEventListener('mousemove', (e) => {
-        setCursorX(e.pageX);
-        setCursorY(e.pageY);
-    })
+    // alert
+    const diffToast = (msg) => {
+        toast(msg);
+    }
 
     const onSizeCursorUpdate = (e) => {
         setSize(e.target.value);
@@ -54,7 +78,6 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, roomId, download, r
             color_container.classList.add('active');
             e.currentTarget.classList.add('active');
         }
-        
     }
 
     const returnHome = () => {
@@ -65,7 +88,215 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, roomId, download, r
       history.push('/');
     }
 
+    const redirectBlock = () => {
+        authState.socket.disconnect();
+        setAuthState((previousState) => {
+            return {...previousState, socket: io(URL)}
+        })
+        history.push('/block');
+    }
+
+    const getBoard = (roomId) => {
+        apiBoard.get(`/${roomId}`,{ 
+          headers: { accessToken: localStorage.getItem("accessToken")},
+        })
+        .then((res) => {
+          if(res.data.dataUrl !== null){
+            boardId.current = res.data.id;
+          }
+        })
+      }
+
+    const kickfromRoom = (user_id) => {
+        const data = {userId: user_id, boardId: boardId.current, role_id: 4}
+        apiParticipations.put('updateRole', data, {
+            headers: {  accessToken: localStorage.getItem('accessToken')},
+        }).then((res) => {
+            if(res.data.error) {
+                diffToast(res.data.error);
+            }
+            else {
+                authState.socket.emit('roleStatus', {userId: user_id, roomId: roomId, role_id: 4});
+            }
+        })
+    }
+
+    const setAdmin = (user_id) => {
+        console.log('vao dc day roi');
+        // console.log(user_id)
+        const data = {userId: user_id, boardId: boardId.current, role_id: 2}
+        console.log(data);
+        apiParticipations.put('updateRole', data, {
+            headers: {  accessToken: localStorage.getItem('accessToken')},
+        }).then((res) => {
+            if(res.data.error) {
+                diffToast(res.data.error);
+            }
+            else {
+                authState.socket.emit('roleStatus', {userId: user_id, roomId: roomId, role_id: 2});
+            }
+        })
+    }
+
+    const cancelAdmin = (userId) => {
+        const data = {userId: userId, boardId: boardId.current, role_id: 3}
+        apiParticipations.put('updateRole', data, {
+            headers: {  accessToken: localStorage.getItem('accessToken')},
+        }).then((res) => {
+            if(res.data.error) {
+                diffToast(res.data.error);
+            }
+            else {
+                authState.socket.emit('roleStatus', {userId: userId, roomId: roomId, role_id: 3});
+            }
+        })
+    }
+
+    const updateRoleRef = async () => {
+        apiParticipations.get(`/isParticipant/${boardId.current}`, {
+            headers: {accessToken: localStorage.getItem('accessToken')},
+            })
+            .then((res) => {
+                roleId.current = res.data.role_id;
+                if(roleId.current === 4) { // kicked: 4
+                    redirectBlock();
+                }
+            })
+    }
+
+    
+    const toggleGuide = (role_id, id) => {
+        if(roleId.current === 1 ){
+            switch (role_id){
+                case 1: return (
+                        <>
+                            <div className="guild">
+                                <span className=""><MdAdminPanelSettings /></span>
+                                Owner
+                            </div>
+                        </>
+                        
+                    )
+                    break;
+                case 2: return (
+                        <>
+                            <button onClick={() => {kickfromRoom(id)}}><span><FaBan></FaBan></span>Kick from room</button>
+                            <button onClick={() => {cancelAdmin(id)}}><span><RiUserSharedFill></RiUserSharedFill></span>Cancel admin</button>
+                            <div className="guild">
+                                <span className=""><MdOutlineAdminPanelSettings /></span>
+                                Admin
+                            </div>
+                        </>
+                        
+                    )
+                    break;
+                case 3: return (
+                        <>
+                            <button onClick={() => kickfromRoom(id)}><span><FaBan></FaBan></span>Kick from room</button>
+                            <button onClick={() => {setAdmin(id);}}><span><RiUserStarFill></RiUserStarFill></span>Set admin</button>
+                            <div className="guild">
+                                <span className=""><FaRegUser /></span>
+                                Guest
+                            </div>
+                        </>
+                        
+                    )
+                    break;
+            }
+        }else if(roleId.current === 2) {
+            switch (role_id){
+                case 1: return (
+                        <>
+                            <div className="guild">
+                                <span className=""><MdAdminPanelSettings /></span>
+                                Owner
+                            </div>
+                        </>
+                        
+                    )
+                    break;
+                case 2: return (
+                        <>
+                            <div className="guild">
+                                <span className=""><MdOutlineAdminPanelSettings /></span>
+                                Admin
+                            </div>
+                        </>
+                        
+                    )
+                    break;
+                case 3: return (
+                        <>
+                            <button onClick={() => kickfromRoom(id)}><span><FaBan></FaBan></span>Kick from room</button>
+                            <div className="guild">
+                                <span className=""><FaRegUser /></span>
+                                Guest
+                            </div>
+                        </>
+                        
+                    )
+                    break;
+            }
+        }else {
+            switch (role_id){
+                case 1: return (
+                        <>
+                            <div className="guild">
+                                <span className=""><MdAdminPanelSettings /></span>
+                                Owner
+                            </div>
+                        </>
+                        
+                    )
+                    break;
+                case 2: return (
+                        <>
+                            <div className="guild">
+                                <span className=""><MdOutlineAdminPanelSettings /></span>
+                                Admin
+                            </div>
+                        </>
+                        
+                    )
+                    break;
+                case 3: return (
+                        <>
+                            <div className="guild">
+                                <span className=""><FaRegUser /></span>
+                                Guest
+                            </div>
+                        </>
+                        
+                    )
+                    break;
+            }
+        }
+        
+    }
+
+    
+
+    const joinRoom = () => {
+        if(localStorage.getItem('accessToken')){
+            apiUser.get('auth', {
+                headers: {accessToken: localStorage.getItem('accessToken')}
+                }).then((res) => {
+                user.current = res.data;
+                setUsername(res.data.username);
+                const _user = res.data;
+                _user.role_id = roleId.current;
+
+                authState.socket.emit('joinRoom', {roomId, _user});
+            });
+        }
+    }
+    
     useEffect(() => {
+        window.addEventListener('mousemove', (e) => {
+            setCursorX(e.clientX);
+            setCursorY(e.clientY || e.touchX);
+            // console.log("dfsdfsd");
+        })
         const colors = document.getElementsByClassName('colour_button');
         for(let i = 0; i < colors.length; i++){
             colors[i].addEventListener('click', (e) => {
@@ -94,10 +325,51 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, roomId, download, r
                 e.stopPropagation();
             }, true)
         }
-    })
+
+        
+
+        // get list adminId of board
+        // check can you participate this room
+        apiBoard.get(`/${roomId}`,{ 
+            headers: { accessToken: localStorage.getItem("accessToken")},
+          })
+          .then((res) => {
+            console.log(res.data.id);
+            if(res.data.id !== null){
+                boardId.current = res.data.id;
+                apiParticipations.get(`/isParticipant/${boardId.current}`, {
+                headers: {accessToken: localStorage.getItem('accessToken')},
+                })
+                .then((res) => {
+                    roleId.current = res.data.role_id;
+                    if(roleId.current === 4) { // kicked: 4
+                        redirectBlock();
+                    }
+                    else {
+                        joinRoom();
+                    }
+                })
+            }
+          })
+
+        // on socket 
+        // get listOfUsers
+        authState.socket.on('listOfUsers', listOfUsers => { 
+            console.log(listOfUsers);
+            setListOfUsers(listOfUsers);
+        });
+        // 
+        authState.socket.on('error', (data) => {
+            history.push('/overload');
+        });
+
+        authState.socket.on('roleStatus', (data) => {
+            updateRoleRef();
+        });
+    }, [])
     return (
         <>
-            <div id='controls'>
+            <div id='controls' ref={control}>
                 <div id='services'>
                     {/* <div className='logo'>CodingNepal</div> */}
                     <ul>
@@ -118,7 +390,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, roomId, download, r
                         <li><a onClick={refresh}>Refresh</a></li>
                         </ul>
                     </li>
-                    {/* <li>
+                    <li>
                         <a href='#'>Services</a>
                         <ul>
                         <li><a href='#'>Web Design</a></li>
@@ -132,13 +404,42 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, roomId, download, r
                             </ul>
                         </li>
                         </ul>
-                    </li> */}
-                    {/* <li><a href='#'>Portfolio</a></li>
-                    <li><a href='#'>Sign out</a></li> */}
+                    </li>
+                    <li><a href='#'>Portfolio</a></li>
+                    <li><a href='#'>Sign out</a></li>
                     </ul>
+                    
                     <div>
                     <a className='share-button' onClick={shareLink}>Invite</a>
                     </div>
+                    <ul id="listboxuser">
+                        {
+                            listOfUsers.map((value, key) => {
+                                if(authState.socket.id !== value.socketId) {
+                                    return (
+                                        <li key={key}>
+                                            <img src={value.photo}></img>
+                                            <div className= "control-user">
+                                            <div className="name">{value.username}<span>{value.socketId}</span></div>
+                                                {
+                                                    toggleGuide(value.role_id, value.id)
+                                                }
+                                            </div>
+                                        </li>
+                                    );
+                                }
+                            })
+                        }
+                        <li>
+                            <img src="https://res.cloudinary.com/h-b-ch-khoa/image/upload/v1636871977/question_xfpegi.png"></img>
+                            <div className= "control-user">
+                                <div className="name">{username}</div>
+                                {
+                                    toggleGuide(roleId.current)
+                                }
+                            </div>
+                        </li>
+                    </ul>
                     
                 </div>
                 <div id='tools'>
@@ -172,7 +473,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, roomId, download, r
                         height: size + 'px',
                     }}
                 >
-            </div>
+                </div>
         </>
     )
 }

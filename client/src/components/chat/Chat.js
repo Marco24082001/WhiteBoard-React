@@ -7,7 +7,7 @@ import {toast} from 'react-toastify';
 import './style.css';
 
 const api = axios.create({
-    baseURL: `${process.env.REACT_APP_API}/auth/`,
+    baseURL: `${process.env.REACT_APP_API}/users/`,
 })
 
 function Chat(props) {

@@ -10,8 +10,12 @@ import Navbar from '../../components/Navbar/Navbar';
 import generate from 'shortid';
 import './style.css';
 
-const api = axios.create({
+const apiBoard = axios.create({
   baseURL: `${process.env.REACT_APP_API}/boards/`,
+})
+
+const apiParticipations = axios.create({
+  baseURL: `${process.env.REACT_APP_API}/participations/`,
 })
 
 function Home() {
@@ -26,9 +30,26 @@ function Home() {
     toast(msg);
   }
 
+  // add role admin
+  const addRoleAdmin = (boardId, role_id)=> {
+    let owner = {boardId: boardId, role_id: role_id}
+    apiParticipations
+      .post('create', owner, {  headers: {
+        accessToken: localStorage.getItem('accessToken')
+      }})
+      .then((res) => {
+        if(res.data.error) {
+          alert(res.data.error);
+        }
+      });
+  }
+
   const createBoard = () =>{
-    const newBoard = {title:'Untitled', room: generate(), postText:'...'};
-    api
+    // create board
+    let boardId = null;
+    let room = generate();
+    const newBoard = {title:'Untitled', room: room, postText:'...'};
+    apiBoard
       .post('create', newBoard, {  headers: {
         accessToken: localStorage.getItem('accessToken')
     }})
@@ -36,13 +57,20 @@ function Home() {
         if(res.data.error){
           alert(res.data.error);
         }else{
+          // add admin
+          boardId = res.data.id;
+          if(boardId !== null) {
+            addRoleAdmin(boardId, 1);
+          }
           history.push(`board/${res.data.room}`);
         }
       })
+    
+    
   }
   
   const deleteBoard = (boardId) => {
-    api.delete(`delete/${boardId}`, {  headers: {
+    apiBoard.delete(`delete/${boardId}`, {  headers: {
       accessToken: localStorage.getItem('accessToken')
   }}).then((res) => {
       if(res.data.error){
@@ -67,10 +95,10 @@ function Home() {
 
   const editTitle = () => {
     const data = {boardId: boardId, title: title};
-    api
-      .put('updatetitle', {  headers: {
+    apiBoard
+      .put('updatetitle', data, { headers: {
         accessToken: localStorage.getItem('accessToken')
-    }}, data)
+    }})
       .then((res) => {
         if(res.data.error){
           diffToast(res.data.error);
@@ -91,7 +119,7 @@ function Home() {
     if(!localStorage.getItem('accessToken')){
       history.push('/login')
     }else{
-      api.get('all', {  headers: {
+      apiBoard.get('all', {  headers: {
         accessToken: localStorage.getItem('accessToken')
     }}).then((res) => {
         if(!res.data.error) {

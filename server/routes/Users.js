@@ -60,7 +60,18 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/auth", validateToken, (req, res) => {
-  res.json(req.user);
+  Users.findOne({ 
+    where: {
+      id: req.user.id
+    }
+  }).then((user) => {
+    if(user){
+      res.json(user);
+    }else {
+      res.json({error: "User isn't existed!"});
+    }
+    }).catch((err) => {console.log(err); res.json({error: err})
+  });
 });
 
 router.get('/photo', validateToken, (req, res) => {

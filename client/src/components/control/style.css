@@ -14,10 +14,11 @@
     /* background-color: #333333; */
     top: 36px;
     left: 0;
-    width: 45px;
+    /* width: 100%; */
     display: flex;
     flex-direction: column;
     z-index: 4;
+    
     /* position: absolute; */
 }
 
@@ -239,14 +240,12 @@
     position: absolute;
     left: 0;
     top: 0;
-}
-
-#services {
-    background: #1b1b1b;
+    background: #140909;
     box-sizing: border-box;
-    z-index: 3;
+    z-index: 7;
     position: fixed;
     width: 100%;
+    /* font-family:Helvetica, sans-serif; */
   }
   
   #services:after {
@@ -261,19 +260,14 @@
     margin-right: 40px;
     position: relative; 
   }
+
   
-  #services ul li {
-    float: left;
-    display: inline-block;
-    background: #1b1b1b;
-    margin: 0 5px;  
-  }
   
   #services ul li a {
     color: white;
     cursor: pointer;
     text-decoration: none;
-    line-height: 2rem;
+    line-height: 2.5rem;
     font-size: 0.9rem;
     padding: 3px 4px
   }
@@ -342,7 +336,7 @@
     font-size: 0.9rem;
     font-weight: 600;
     line-height: 1.5rem;
-    margin-right: 60px;
+    margin-right: 30px;
     cursor: pointer;
     padding: 3px 4px;
     border-radius: 5px;
@@ -360,6 +354,7 @@
     content: "Copied";
     position: absolute;
     bottom: -2.5rem;
+
     color: white;
     padding: 4px 6px;
     border-radius: 5px;
@@ -396,4 +391,98 @@
     top: 200px;
     pointer-events: none;
     z-index: 1;
+}
+
+#services #listboxuser {
+    float: right;
+    list-style: none;
+    margin-right: 10px;
+  }
+
+  #services #listboxuser img{
+      width: 30px;
+  }
+
+  #services #listboxuser li{
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    margin : 2px 5px;
+    /* line-height: 2rem; */
+    font-size: 0.9rem;
+    /* padding: 3px 4px */
+    border: 1px solid #33ffff;
+    position: relative;
+  }
+  
+  #services ul li {
+    float: left;
+    display: inline-block;
+    background: #1b1b1b;
+    margin: 0 5px;  
+  }
+
+#listboxuser li .control-user {
+    position: absolute;
+    /* left: 20px; */
+    width: 200px;
+    background: white;
+    color: black;
+    /* padding: 20px 20px; */
+    border-radius: 5px;
+    right: 0px;
+    /* transform: translateX(-100%); */
+    border: 1.5px solid #000000;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    display: none;
+}
+
+.control-user button {
+    text-decoration: none;
+    border: none;
+    padding: 3px 0;
+    cursor: pointer;
+    background-color:white;
+    width: 100%;
+}
+
+.control-user button span {
+    vertical-align: middle;
+    line-height: 10px;
+    color: red;
+    margin-right: 4px;
+}
+
+.control-user .guild {
+    font-size: 0.8rem;
+}
+
+.control-user .guild span {
+    color: #3498db;
+    font-size: 1.2rem;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+.control-user .name {
+    padding: 5px 0;
+    font-size: 0.7rem;
+}
+
+.control-user .name span {
+    margin-left: 5px;
+    font-size: 0.6rem;
+    color:#333333
+}
+
+.control-user button:hover {
+   color: red;
+   background-color: rgb(218, 212, 218);
+   border: 1px solid rgb(218, 212, 218);
+}
+
+#listboxuser li:hover .control-user {
+    display: block;
 }

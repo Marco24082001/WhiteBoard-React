@@ -7,7 +7,7 @@ import { AuthContext } from '../../helpers/AuthContext';
 import {toast} from 'react-toastify';
 
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_API}/auth/`
+  baseURL: `${process.env.REACT_APP_API}/users/`
 })
 
 function Navbar(props) {
@@ -72,7 +72,7 @@ function Navbar(props) {
   }
 
   const settingInfo = () => {
-    
+    console.log('sdfsdf');
     if(validateSetting()){
       const user_setting = document.getElementById('user-setting');
       if(image !== ''){
@@ -92,20 +92,38 @@ function Navbar(props) {
           console.log(err);
         })
         .finally(() => {
+          setImage('');
           user_setting.classList.remove('active');
         });
       }
       else {
-        setUrl(url);
+        console.log('vao roi');
+        const data = {username: username, photo: url};
+        console.log(username);
+        api.put('setting-info/', data, { 
+          headers: { accessToken: localStorage.getItem("accessToken")},
+        })
+        .then(res => {
+          if (res.data.error) diffToast(res.data.error);
+          else {
+            
+            document.getElementById('user_photo').src = url;
+            document.getElementById('photo').src = url;
+            localStorage.setItem('accessToken', res.data); 
+          }
+          })
+        .catch(err => diffToast(err));  setUrl(url);
         user_setting.classList.remove('active');
       }
     }
   }
 
   useEffect(() => {
+    console.log("effect")
     api.get('auth', {
       headers: {accessToken: localStorage.getItem('accessToken')}
       }).then((res) => {
+        console.log('sdfsddsfsd')
         if(!res.data.error){
           document.getElementById('username').value = res.data.username;
           setUsername(res.data.username);
@@ -117,6 +135,7 @@ function Navbar(props) {
     }).then(res => {
       if(res.data.error) diffToast(res.data.error);
       else {
+        console.log(res.data.photo);
         setUrl(res.data.photo);
       }
     })
@@ -128,12 +147,14 @@ function Navbar(props) {
     if(url !== '') {
       console.log('vao roi');
       const data = {username: username, photo: url};
+      console.log(username);
       api.put('setting-info/', data, { 
         headers: { accessToken: localStorage.getItem("accessToken")},
       })
       .then(res => {
         if (res.data.error) diffToast(res.data.error);
         else {
+          
           document.getElementById('user_photo').src = url;
           document.getElementById('photo').src = url;
           localStorage.setItem('accessToken', res.data); 

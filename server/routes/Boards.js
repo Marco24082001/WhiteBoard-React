@@ -7,7 +7,7 @@ const shortid = require('shortid');
 router.get("/all", validateToken, (req, res) => {
     Boards.findAll({
         where: {
-            UserId: req.user.id
+            userId: req.user.id
         }
     }).then(boards => res.json(boards));
 });
@@ -50,12 +50,13 @@ router.post("/create", validateToken, async (req,res) => {
     Boards.create({ 
         title: title,
         room: room,
-        UserId: user.id,
+        userId: user.id,
     }).then(board => res.json(board))
 });
 
 router.put("/updatetitle", validateToken, async (req, res) => {
     const {boardId, title} = req.body;
+    console.log(boardId)
     await Boards.update(
         {
             title: title
@@ -83,7 +84,7 @@ router.delete("/delete/:boardId", validateToken, (req, res) => {
     Boards.destroy({
         where:{
             id: boardId,
-            UserId: req.user.id
+            userId: req.user.id
         }
     }).then(() => res.json("delete successfully"));
     res.json("DELETE SUCCESSFULLY");

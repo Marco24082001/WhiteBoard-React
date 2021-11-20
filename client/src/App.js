@@ -9,6 +9,7 @@ import Newpassword from './pages/newpassword/Newpassword';
 import Whiteboard from './pages/whiteboard/Whiteboard';
 import PageNotFound from './pages/error/PageNotFound';
 import OverloadPage from './pages/error/OverloadPage';
+import BlockPage from './pages/error/BlockPage';
 import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {io} from 'socket.io-client';
@@ -30,6 +31,7 @@ function App() {
             <Route path='/reset/' exact component={Forgot} />
             <Route path='/reset/:token' exact component={Newpassword} />
             <Route path='/overload' exact component={OverloadPage} />
+            <Route path='/block' exact component={BlockPage}/>
             <Route path='*' exact component={PageNotFound}/>
           </Switch>
         </Router>

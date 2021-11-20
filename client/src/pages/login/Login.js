@@ -10,7 +10,7 @@ import logodut from '../../images/logodut.png';
 import './style.css';
 
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_API}/auth/`,
+  baseURL: `${process.env.REACT_APP_API}/users/`,
 })
 
 function Login() {

@@ -5,7 +5,7 @@ import { AuthContext } from '../../helpers/AuthContext';
 import isEmpty from 'validator/lib/isEmpty';
 
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_API}/auth/`,
+  baseURL: `${process.env.REACT_APP_API}/users/`,
 })
 
 function Newpassword() {

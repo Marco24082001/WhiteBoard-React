@@ -1,17 +1,26 @@
+'use strict';
+const {
+  Model
+} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-    const Boards = sequelize.define("Boards", {
-        title: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        room: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        dataUrl: {
-            type: DataTypes.TEXT('long'),
-            allowNull: true,
-        },
-    });
-    return Boards;
+  class Boards extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    static associate(models) {
+      // define association here
+      this.belongsTo(models.Users, {foreignKey: 'userId'});
+    }
+  };
+  Boards.init({
+    title: DataTypes.STRING,
+    room: DataTypes.STRING,
+    dataUrl: DataTypes.TEXT('long')
+  }, {
+    sequelize,
+    modelName: 'Boards',
+  });
+  return Boards;
 };

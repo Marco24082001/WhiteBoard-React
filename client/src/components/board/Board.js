@@ -7,12 +7,17 @@ import Control from '../control/Control';
 import Chat from '../chat/Chat';
 import './style.css';
 
-const api = axios.create({
+const apiBoard = axios.create({
   baseURL: `${process.env.REACT_APP_API}/boards/`
+})
+
+const apiUser = axios.create({
+  baseURL: `${process.env.REACT_APP_API}/users/`
 })
 
 const Board = (props) => {
   const roomId = props.roomId;
+
   const history = useHistory();
   const {authState} = useContext(AuthContext);
   const canvasRef = useRef(null);
@@ -53,7 +58,6 @@ const Board = (props) => {
   //function update state
   const onColorUpdate = (colour) => {
     color.current = colour;
-    console.log(authState.socket);
   };
 
   const onToolUpdate = (e) => {
@@ -85,7 +89,7 @@ const Board = (props) => {
   // store data board to db
   const updateBoard = (blob) => {
     const data = {room: roomId, dataUrl: blob}
-    api.put("updateboard/", data, {
+    apiBoard.put("updateboard/", data, {
       headers: { accessToken: localStorage.getItem("accessToken")},
     })
     .then((res) => {
@@ -143,20 +147,11 @@ const Board = (props) => {
     document.getElementById('drag').click();
   }
 
-  const username = "Thanh Vi";
-
   useEffect(() => {
-    authState.socket.emit('joinRoom', {roomId, username});
-    authState.socket.on('error', (data) => {
-      console.log(data);
-      history.push('/overload');
-    })
-  },[]);
-
-  useEffect(() => {
+    
     // retrive data board when access
     const getBoard = (roomId) => {
-      api.get(`/${roomId}`,{ 
+      apiBoard.get(`/${roomId}`,{ 
         headers: { accessToken: localStorage.getItem("accessToken")},
       })
       .then((res) => {
@@ -198,7 +193,6 @@ const Board = (props) => {
           ctx.lineJoin = "round";
           ctx.stroke();
           ctx.closePath();
-          console.log(data.color);
           if (!data.emit) { return; }
           emitCanvas();
         } 
@@ -485,7 +479,7 @@ const Board = (props) => {
     <div id="whiteboard-container">
       <canvas ref={canvasRef} className="board" />
       <canvas ref= {spreadCanvasRef} className = "spreadboard" />
-      <Control onColorUpdate = {onColorUpdate} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate} roomId = {roomId} download={download} refresh={refresh} uploadImage={uploadImage}/>
+      <Control onColorUpdate = {onColorUpdate} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate} download={download} refresh={refresh} uploadImage={uploadImage} roomId = {roomId}/>
       <Chat roomId={roomId}/>
     </div>
   );

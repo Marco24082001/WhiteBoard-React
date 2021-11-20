@@ -6,7 +6,7 @@ import {toast} from 'react-toastify';
 import isEmpty from 'validator/lib/isEmpty';
 import isEmail from 'validator/lib/isEmail';
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_API}/auth/`
+  baseURL: `${process.env.REACT_APP_API}/users/`
 })
 
 function Forgot() {
