@@ -14,7 +14,12 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        role: 'guest',
+        role: 'edited',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        role: 'only see',
         createdAt: new Date(),
         updatedAt: new Date(),
       },

@@ -3,8 +3,10 @@ const Users = [];
 //join room to interact
 function userJoin(socketId, id, username, role_id, photo, room) {
     const user = {socketId, id, username, role_id, photo, room};
-
-    Users.push(user);
+    const index = Users.findIndex(user => user.id === id);
+    if(index === -1){
+        Users.push(user);
+    }
     return user;
 }
 

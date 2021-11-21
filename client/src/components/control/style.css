@@ -335,7 +335,7 @@
     color: white;
     font-size: 0.9rem;
     font-weight: 600;
-    line-height: 1.5rem;
+    line-height: 2rem;
     margin-right: 30px;
     cursor: pointer;
     padding: 3px 4px;
@@ -448,11 +448,19 @@
     width: 100%;
 }
 
-.control-user button span {
+.control-user .kick-btn span {
     vertical-align: middle;
     line-height: 10px;
-    color: red;
+    color: red !important;
     margin-right: 4px;
+}
+
+.control-user .setAdmin-btn span {
+    vertical-align: middle;
+    line-height: 10px;
+    color: #3498db !important;
+    margin-right: 4px;
+    font-size: 0.8rem;
 }
 
 .control-user .guild {
@@ -486,3 +494,4 @@
 #listboxuser li:hover .control-user {
     display: block;
 }
+

@@ -378,8 +378,8 @@ const Board = (props) => {
 
     const onMouseDown = (e) => {
       drawing = true;
-      current.x = e.clientX || e.touches[0].clientX;
-      current.y = e.clientY || e.touches[0].clientY;
+      current.x = e.clientX || e.touches.clientX;
+      current.y = e.clientY || e.touches.clientY;
     };
 
     const onMouseMove = (e) => {
@@ -387,16 +387,16 @@ const Board = (props) => {
       let data = {
         x0: current.x,
         y0: current.y,
-        x1: e.clientX || e.touches[0].clientX,
-        y1: e.clientY || e.touches[0].clientY,
+        x1: e.clientX || e.touches.clientX,
+        y1: e.clientY || e.touches.clientY,
         color: color.current,
         size: size.current,
         emit: true,
       }
       tools[tool.current].draw(data);
-      // drawLine(current.x, current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, color.current, size.current, true);
-      current.x = e.clientX || e.touches[0].clientX;
-      current.y = e.clientY || e.touches[0].clientY;
+      // drawLine(current.x, current.y, e.clientX || e.touches.clientX, e.clientY || e.touches.clientY, color.current, size.current, true);
+      current.x = e.clientX || e.touches.clientX;
+      current.y = e.clientY || e.touches.clientY;
     };
 
     const onMouseUp = (e) => {
@@ -405,8 +405,8 @@ const Board = (props) => {
       let data = {
         x0: current.x,
         y0: current.y,
-        x1: e.clientX || e.touches[0].clientX,
-        y1: e.clientY || e.touches[0].clientY,
+        x1: e.clientX || e.touches.clientX,
+        y1: e.clientY || e.touches.clientY,
         color: color.current,
         size: size.current,
         emit: true,
