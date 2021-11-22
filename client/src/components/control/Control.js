@@ -80,13 +80,11 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
             color_container.classList.add('active');
             e.currentTarget.classList.add('active');
         }
+        console.log(authState.status)
     }
 
     const returnHome = () => {
       authState.socket.disconnect();
-      setAuthState((previousState) => {
-        return {...previousState, socket: io(URL)}
-      })
       history.push('/');
     }
 
@@ -124,10 +122,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
     }
 
     const setAdmin = (user_id) => {
-        console.log('vao dc day roi');
-        // console.log(user_id)
         const data = {userId: user_id, boardId: boardId.current, role_id: 2}
-        console.log(data);
         apiParticipations.put('updateRole', data, {
             headers: {  accessToken: localStorage.getItem('accessToken')},
         }).then((res) => {
@@ -168,6 +163,20 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
         })
     }
 
+    const setEditor = (userId) => {
+        const data = {userId: userId, boardId: boardId.current, role_id: 3} //3: editor
+        apiParticipations.put('updateRole', data, {
+            headers: {  accessToken: localStorage.getItem('accessToken')},
+        }).then((res) => {
+            if(res.data.error) {
+                diffToast(res.data.error);
+            }
+            else {
+                authState.socket.emit('roleStatus', {userId: userId, roomId: roomId, role_id: 3});
+            }
+        })
+    }
+
     const updateRoleRef = async () => {
         apiParticipations.get(`/isParticipant/${boardId.current}`, {
             headers: {accessToken: localStorage.getItem('accessToken')},
@@ -198,6 +207,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                         <>
                             <button className='kick-btn' onClick={() => {kickfromRoom(id)}}><span><FaBan></FaBan></span>Kick from room</button>
                             <button onClick={() => {cancelAdmin(id)}}><span><RiUserSharedFill></RiUserSharedFill></span>Cancel admin</button>
+                            <button onClick={() => {onlySee(id)}}><span><FaRegEye /></span>Set only see</button>
                             <div className='guild'>
                                 <span className=''><MdOutlineAdminPanelSettings /></span>
                                 Admin
@@ -210,6 +220,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                         <>
                             <button className='kick-btn' onClick={() => kickfromRoom(id)}><span><FaBan></FaBan></span>Kick from room</button>
                             <button className='setAdmin-btn' onClick={() => {setAdmin(id);}}><span><RiUserStarFill></RiUserStarFill></span>Set admin</button>
+                            <button onClick={() => {onlySee(id)}}><span><FaRegEye /></span>Set only see</button>
                             <div className='guild'>
                                 <span className=''><BiEdit /></span>
                                 Edited
@@ -222,6 +233,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                     <>
                             <button className='kick-btn' onClick={() => kickfromRoom(id)}><span><FaBan></FaBan></span>Kick from room</button>
                             <button className='setAdmin-btn' onClick={() => {setAdmin(id);}}><span><RiUserStarFill></RiUserStarFill></span>Set admin</button>
+                            <button className='setEditor-btn' onClick={() => {setEditor(id);}}><span><BiEdit></BiEdit></span>Set Editor</button>
                             <div className='guild'>
                                 <span className=''><FaRegEye /></span>
                                 Only see
@@ -255,6 +267,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                 case 3: return (
                         <>
                             <button className='kick-btn' onClick={() => kickfromRoom(id)}><span><FaBan></FaBan></span>Kick from room</button>
+                            <button onClick={() => {onlySee(id)}}><span><FaRegEye /></span>Set only see</button>
                             <div className='guild'>
                                 <span className=''><BiEdit /></span>
                                 Edited
@@ -266,6 +279,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                 case 4: return (
                     <>
                             <button className='kick-btn' onClick={() => kickfromRoom(id)}><span><FaBan></FaBan></span>Kick from room</button>
+                            <button className='setEditor-btn' onClick={() => {setEditor(id);}}><span><BiEdit></BiEdit></span>Set Editor</button>
                             <div className='guild'>
                                 <span className=''><FaRegEye /></span>
                                 Only see
@@ -342,7 +356,6 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
         window.addEventListener('mousemove', (e) => {
             setCursorX(e.clientX);
             setCursorY(e.clientY);
-            // console.log('dfsdfsd');
         })
         const colors = document.getElementsByClassName('colour_button');
         for(let i = 0; i < colors.length; i++){
@@ -381,14 +394,15 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
             headers: { accessToken: localStorage.getItem('accessToken')},
           })
           .then((res) => {
-            console.log(res.data.id);
             if(res.data.id !== null){
                 boardId.current = res.data.id;
                 apiParticipations.get(`/isParticipant/${boardId.current}`, {
                 headers: {accessToken: localStorage.getItem('accessToken')},
                 })
                 .then((res) => {
+                    
                     roleId.current = res.data.role_id;
+                    
                     if(roleId.current === 5) { // kicked: 5
                         redirectBlock();
                     }
@@ -402,8 +416,8 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
         // on socket 
         // get listOfUsers
         authState.socket.on('listOfUsers', listOfUsers => { 
-            console.log(listOfUsers);
             setListOfUsers(listOfUsers);
+            console.log(listOfUsers)
         });
         // 
         authState.socket.on('error', (data) => {

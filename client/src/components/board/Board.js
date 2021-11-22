@@ -1,8 +1,8 @@
-import React, { useRef, useEffect, useContext } from 'react';
+import React, { useRef, useEffect, useContext, useState } from 'react';
 import axios from 'axios';
 import {useHistory } from "react-router-dom";
 import { AuthContext } from "../../helpers/AuthContext";
-import {io} from 'socket.io-client';
+import {toast} from 'react-toastify';
 import Control from '../control/Control';
 import Chat from '../chat/Chat';
 import './style.css';
@@ -10,6 +10,11 @@ import './style.css';
 const apiBoard = axios.create({
   baseURL: `${process.env.REACT_APP_API}/boards/`
 })
+
+const apiParticipations = axios.create({
+  baseURL: `${process.env.REACT_APP_API}/participations/`,
+});
+
 
 const apiUser = axios.create({
   baseURL: `${process.env.REACT_APP_API}/users/`
@@ -29,8 +34,12 @@ const Board = (props) => {
   const previous = useRef([]);
   const title = useRef();
   const dragimg = useRef(null);
+  const status = useRef(true);
+  const boardId = useRef(null);
   
-
+  const diffToast = (msg) => {
+    toast(msg);
+  }
   // emit data
   const emitCanvas = () => {
     if(timeout.current != undefined) clearTimeout(timeout.current)
@@ -147,7 +156,40 @@ const Board = (props) => {
     document.getElementById('drag').click();
   }
 
+  const updateRoleRef = async () => {
+    apiParticipations.get(`/isParticipant/${boardId.current}`, {
+        headers: {accessToken: localStorage.getItem('accessToken')},
+        })
+        .then((res) => {
+            if(res.data.role_id === 4) { // kicked: 5
+                status.current = false;
+                console.log('sdfsfd');
+            }else{
+              status.current = true;
+            }
+        })
+}
+
   useEffect(() => {
+    apiBoard.get(`/${roomId}`,{ 
+      headers: { accessToken: localStorage.getItem('accessToken')},
+    })
+    .then((res) => {
+      if(res.data.id !== null){
+          boardId.current = res.data.id;
+          apiParticipations.get(`/isParticipant/${boardId.current}`, {
+          headers: {accessToken: localStorage.getItem('accessToken')},
+          })
+          .then((res) => {
+              if(res.data.role_id === 4) { // kicked: 5
+                  status.current = false;
+                  console.log('vl')
+              }else {
+                status.current = true;
+              }
+          })
+      }
+    })
     
     // retrive data board when access
     const getBoard = (roomId) => {
@@ -166,7 +208,6 @@ const Board = (props) => {
         }
       })
     }
-
     getBoard(roomId);
   
     const canvas = canvasRef.current;
@@ -383,6 +424,7 @@ const Board = (props) => {
     };
 
     const onMouseMove = (e) => {
+      console.log(status.current);
       if (!drawing) { return; }
       let data = {
         x0: current.x,
@@ -393,7 +435,12 @@ const Board = (props) => {
         size: size.current,
         emit: true,
       }
-      tools[tool.current].draw(data);
+      if(status.current) {
+        tools[tool.current].draw(data);
+      }else {
+        console.log(authState.status);
+        diffToast('Only see !')
+      }
       // drawLine(current.x, current.y, e.clientX || e.touches.clientX, e.clientY || e.touches.clientY, color.current, size.current, true);
       current.x = e.clientX || e.touches.clientX;
       current.y = e.clientY || e.touches.clientY;
@@ -411,7 +458,11 @@ const Board = (props) => {
         size: size.current,
         emit: true,
       }
-      tools[tool.current].draw(data);
+      if(status.current) {
+        tools[tool.current].draw(data);
+      }else {
+        diffToast('Only see !')
+      }
     };
 
     // ----------- limit the number of events per second -----------------------
@@ -470,6 +521,9 @@ const Board = (props) => {
       const context = canvasRef.current.getContext('2d');
       context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     });
+    authState.socket.on('roleStatus', (data) => {
+      updateRoleRef();
+  });
     // onDrawingEvent(getBoard(roomId));
   }, []);
 

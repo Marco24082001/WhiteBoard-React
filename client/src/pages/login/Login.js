@@ -90,9 +90,9 @@ function Login() {
         // alert(res.data.error);
       } else {
         localStorage.setItem('accessToken', res.data); 
-        setAuthState((previousState) => {
-          return {...previousState, status: true}
-        });
+        // setAuthState((previousState) => {
+        //   return {...previousState, status: true}
+        // });
         if(room.id !== undefined) history.push(`board/${room.id}`)
         else history.push('/');
       }

@@ -30,6 +30,7 @@ function onConnection(socket){
     console.log("user online");
     socket.on('joinRoom', ({roomId, _user}) => {
         if(Rooms.checkCount(roomId)) {
+            console.log('sdfsdfsdfoshfohsdfosodfj');
             // console.log(socket.id);
             socket.join(roomId);
             Rooms.increaseRoom(roomId);

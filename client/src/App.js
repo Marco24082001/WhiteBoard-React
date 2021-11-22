@@ -17,7 +17,7 @@ import { AuthContext } from './helpers/AuthContext';
 import { useState, useEffect } from 'react';
 const socket = io(`${process.env.REACT_APP_API}`);
 function App() {
-  const [authState, setAuthState] = useState({status: false, socket: socket});
+  const [authState, setAuthState] = useState({status: true, socket: socket});
   return (
     <div className='App'>
       <ToastContainer />

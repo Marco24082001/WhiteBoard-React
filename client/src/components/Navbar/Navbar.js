@@ -16,12 +16,12 @@ function Navbar(props) {
   const [image, setImage] = useState('');
   const [url, setUrl] = useState('');
   const count = useRef(0);
+  let history = useHistory();
+  const { setAuthState } = useContext(AuthContext);
+
   const diffToast = (msg) => {
     toast(msg);
   }
-
-  let history = useHistory();
-  const { authState, setAuthState } = useContext(AuthContext);
   const logout = () => {
     localStorage.removeItem('accessToken')
     history.push('/login')
