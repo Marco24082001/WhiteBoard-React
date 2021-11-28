@@ -206,8 +206,8 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                 case 2: return (
                         <>
                             <button className='kick-btn' onClick={() => {kickfromRoom(id)}}><span><FaBan></FaBan></span>Kick from room</button>
-                            <button onClick={() => {cancelAdmin(id)}}><span><RiUserSharedFill></RiUserSharedFill></span>Cancel admin</button>
-                            <button onClick={() => {onlySee(id)}}><span><FaRegEye /></span>Set only see</button>
+                            <button className= 'cancelAdmin-btn' onClick={() => {cancelAdmin(id)}}><span><RiUserSharedFill></RiUserSharedFill></span>Cancel admin</button>
+                            <button className= 'setOnlysee-btn' onClick={() => {onlySee(id)}}><span><FaRegEye /></span>Set only see</button>
                             <div className='guild'>
                                 <span className=''><MdOutlineAdminPanelSettings /></span>
                                 Admin
@@ -220,7 +220,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                         <>
                             <button className='kick-btn' onClick={() => kickfromRoom(id)}><span><FaBan></FaBan></span>Kick from room</button>
                             <button className='setAdmin-btn' onClick={() => {setAdmin(id);}}><span><RiUserStarFill></RiUserStarFill></span>Set admin</button>
-                            <button onClick={() => {onlySee(id)}}><span><FaRegEye /></span>Set only see</button>
+                            <button className='setOnlysee-btn' onClick={() => {onlySee(id)}}><span><FaRegEye /></span>Set only see</button>
                             <div className='guild'>
                                 <span className=''><BiEdit /></span>
                                 Edited
@@ -267,7 +267,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                 case 3: return (
                         <>
                             <button className='kick-btn' onClick={() => kickfromRoom(id)}><span><FaBan></FaBan></span>Kick from room</button>
-                            <button onClick={() => {onlySee(id)}}><span><FaRegEye /></span>Set only see</button>
+                            <button className='setOnlysee-btn' onClick={() => {onlySee(id)}}><span><FaRegEye /></span>Set only see</button>
                             <div className='guild'>
                                 <span className=''><BiEdit /></span>
                                 Edited
@@ -451,7 +451,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                         <li><a onClick={refresh}>Refresh</a></li>
                         </ul>
                     </li>
-                    <li>
+                    {/* <li>
                         <a href='#'>Services</a>
                         <ul>
                         <li><a href='#'>Web Design</a></li>
@@ -467,7 +467,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                         </ul>
                     </li>
                     <li><a href='#'>Portfolio</a></li>
-                    <li><a href='#'>Sign out</a></li>
+                    <li><a href='#'>Sign out</a></li> */}
                     </ul>
                     
                     <div>
@@ -494,11 +494,12 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                         <li>
                             <img src={photo}></img>
                             <div className= 'control-user'>
-                                <div className='name'>{username}</div>
+                                <div className='name'>You</div>
                                 {
                                     toggleGuide(roleId.current)
                                 }
                             </div>
+                            <span className='user-name'>{username}</span>
                         </li>
                     </ul>
                     

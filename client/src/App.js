@@ -10,7 +10,7 @@ import Whiteboard from './pages/whiteboard/Whiteboard';
 import PageNotFound from './pages/error/PageNotFound';
 import OverloadPage from './pages/error/OverloadPage';
 import BlockPage from './pages/error/BlockPage';
-import {ToastContainer, toast} from 'react-toastify';
+import {ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {io} from 'socket.io-client';
 import { AuthContext } from './helpers/AuthContext';
@@ -20,7 +20,7 @@ function App() {
   const [authState, setAuthState] = useState({status: true, socket: socket});
   return (
     <div className='App'>
-      <ToastContainer />
+      <ToastContainer limit={1} autoClose={2000}/>
       <AuthContext.Provider value={{ authState, setAuthState }}>
         <Router>
           <Switch>

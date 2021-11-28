@@ -12,7 +12,7 @@
 #tools {
     position: absolute;
     /* background-color: #333333; */
-    top: 36px;
+    top: 42px;
     left: 0;
     /* width: 100%; */
     display: flex;
@@ -165,7 +165,7 @@
     background-color: #333333;
     position: absolute;
     right: 0px;
-    top: 40px;
+    top: 42px;
     padding-left: 20px;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -335,7 +335,7 @@
     color: white;
     font-size: 0.9rem;
     font-weight: 600;
-    line-height: 2rem;
+    line-height: 2.4rem;
     margin-right: 30px;
     cursor: pointer;
     padding: 3px 4px;
@@ -405,14 +405,19 @@
 
   #services #listboxuser li{
     color: white;
+    height: 40px;
     cursor: pointer;
     text-decoration: none;
     margin : 2px 5px;
-    /* line-height: 2rem; */
+    line-height: 2rem;
     font-size: 0.9rem;
-    /* padding: 3px 4px */
+    padding: 3px 4px;
     border: 1px solid #33ffff;
     position: relative;
+    align-items: center;
+    display:flex;
+    justify-content:space-evenly;
+    gap: 5px;
   }
   
   #services ul li {
@@ -424,6 +429,7 @@
 
 #listboxuser li .control-user {
     position: absolute;
+    top: 39px;
     /* left: 20px; */
     width: 200px;
     background: white;
@@ -446,6 +452,12 @@
     cursor: pointer;
     background-color:white;
     width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+    padding-left: 30px;
 }
 
 .control-user .kick-btn span {
@@ -453,6 +465,7 @@
     line-height: 10px;
     color: red !important;
     margin-right: 4px;
+    font-size: 1rem;
 }
 
 .control-user .setAdmin-btn span {
@@ -460,7 +473,7 @@
     line-height: 10px;
     color: #3498db !important;
     margin-right: 4px;
-    font-size: 0.8rem;
+    font-size: 1rem;
 }
 
 .control-user .setEditor-btn span {
@@ -468,7 +481,23 @@
     line-height: 10px;
     color: rgb(2, 2, 19);
     margin-right: 4px;
-    font-size: 0.8rem;
+    font-size: 1rem;
+}
+
+.control-user .setOnlysee-btn span {
+    vertical-align: middle;
+    line-height: 10px;
+    color: rgb(2, 2, 19);
+    margin-right: 4px;
+    font-size: 1rem;
+}
+
+.control-user .cancelAdmin-btn span {
+    vertical-align: middle;
+    line-height: 10px;
+    color: rgb(194, 32, 243);
+    margin-right: 4px;
+    font-size: 1rem;
 }
 
 .control-user .guild {
@@ -477,14 +506,16 @@
 
 .control-user .guild span {
     color: #3498db;
-    font-size: 1rem;
+    font-size: 1.2rem;
     vertical-align: middle;
+    line-height: 14px;
     margin-right: 4px;
 }
 
 .control-user .name {
     padding: 5px 0;
     font-size: 0.7rem;
+    text-align: center;
 }
 
 .control-user .name span {
@@ -496,10 +527,31 @@
 .control-user button:hover {
    color: red;
    background-color: rgb(218, 212, 218);
-   border: 1px solid rgb(218, 212, 218);
+   /* border: 1px solid rgb(218, 212, 218); */
 }
+
+.control-user .setEditor-btn:hover {
+    color: #3498db;
+ }
+
+ .control-user .setAdmin-btn:hover {
+    color: #3498db;
+ }
+
+ .control-user .cancelAdmin-btn:hover {
+     color: rgb(194, 32, 243);
+ }
+
+ .control-user .setOnlysee-btn:hover {
+    color: black;
+ }
 
 #listboxuser li:hover .control-user {
     display: block;
+}
+
+.user-name {
+    line-height: 1.6rem;
+    font-size: 0.8rem;
 }
 

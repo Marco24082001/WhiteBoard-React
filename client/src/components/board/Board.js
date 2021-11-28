@@ -39,6 +39,7 @@ const Board = (props) => {
   
   const diffToast = (msg) => {
     toast(msg);
+    toast.clearWaitingQueue();
   }
   // emit data
   const emitCanvas = () => {
