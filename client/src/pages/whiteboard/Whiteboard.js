@@ -1,10 +1,9 @@
 import React from "react";
-import { useEffect, useState, useContext} from "react";
+import { useEffect, useContext} from "react";
 import { useParams } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { AuthContext } from "../../helpers/AuthContext";
 import Board from "../../components/board/Board";
-import {io} from 'socket.io-client';
 import './style.css';
 
 

@@ -11,7 +11,7 @@ const api = axios.create({
 
 function Forgot() {
   const [email, setEmail] = useState('');
-  const { setAuthState } = useContext(AuthContext);
+  // const { setAuthState } = useContext(AuthContext);
   const [validationMsg, setValidationMsg] = useState('');
   let history = useHistory();
 

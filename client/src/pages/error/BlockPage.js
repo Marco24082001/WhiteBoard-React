@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import './style.css';
 function BlockPage() {
     const container = useRef(null);

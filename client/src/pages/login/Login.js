@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import {toast} from 'react-toastify';
@@ -21,7 +21,7 @@ function Login() {
   const [repeat_password, setRepeat_password] = useState('');
   const [validationMsg, setValidationMsg] = useState('');
   const [check, setCheck] = useState('checked');
-  const { authState, setAuthState } = useContext(AuthContext);
+  const { setAuthState } = useContext(AuthContext);
   const diffToast = (msg) => {
     toast(msg);
   }

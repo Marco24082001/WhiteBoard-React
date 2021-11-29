@@ -10,8 +10,8 @@ const api = axios.create({
   baseURL: `${process.env.REACT_APP_API}/users/`
 })
 
-function Navbar(props) {
-  const [validationMsg, setValidationMsg] = useState('');
+function Navbar() {
+  // const [validationMsg, setValidationMsg] = useState('');
   const [username, setUsername] = useState('');
   const [image, setImage] = useState('');
   const [url, setUrl] = useState('');

@@ -2,7 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import { useEffect, useState, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
-import { AuthContext } from '../../helpers/AuthContext';
+// import { AuthContext } from '../../helpers/AuthContext';
 import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {FaTrashAlt,FaEdit} from 'react-icons/fa';
@@ -20,7 +20,7 @@ const apiParticipations = axios.create({
 
 function Home() {
   const [listOfBoards, setListOfBoards] = useState([]);
-  const { authState } = useContext(AuthContext);
+  // const { authState } = useContext(AuthContext);
   const [title, setTitle] = useState('');
   const [boardId, setBoardId] = useState('');
   let history = useHistory();

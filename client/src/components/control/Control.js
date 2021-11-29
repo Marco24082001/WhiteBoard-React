@@ -27,7 +27,7 @@ const apiUser = axios.create({
   
 // import { ReactComponent as LogIcon } from '../../icons/circle.svg';
 // rfce
-function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, uploadImage, roomId}) {
+function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, uploadImage, undoBoard, redoBoard, roomId}) {
     const [color, setColor] = useState('lightblue');
     const [cursorX, setCursorX] = useState();
     const [cursorY, setCursorY] = useState();
@@ -36,10 +36,8 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
     const [photo, setPhoto] = useState('');
     const control = useRef();
     let history = useHistory();
-    const listOfAdmin = useRef();
     const user = useRef();
     const [username, setUsername] = useState('Me');
-    const owner = useRef();
     const roleId = useRef();
     const boardId = useRef();
     const linkURL = `${URL}/${roomId}`
@@ -95,17 +93,6 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
         })
         history.push('/block');
     }
-
-    const getBoard = (roomId) => {
-        apiBoard.get(`/${roomId}`,{ 
-          headers: { accessToken: localStorage.getItem('accessToken')},
-        })
-        .then((res) => {
-          if(res.data.dataUrl !== null){
-            boardId.current = res.data.id;
-          }
-        })
-      }
 
     const kickfromRoom = (user_id) => {
         const data = {userId: user_id, boardId: boardId.current, role_id: 5}
@@ -372,7 +359,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
         }
 
         const tools = document.getElementsByClassName('tool_button');
-        for(let i = 0; i < tools.length; i++) {
+        for(let i = 0; i < tools.length - 2; i++) {
             tools[i].addEventListener('click', (e) => {
                 onToolUpdate(e);
                 let tool = document.getElementsByClassName('tool_button selected');
@@ -417,7 +404,6 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
         // get listOfUsers
         authState.socket.on('listOfUsers', listOfUsers => { 
             setListOfUsers(listOfUsers);
-            console.log(listOfUsers)
         });
         // 
         authState.socket.on('error', (data) => {
@@ -511,6 +497,9 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                     <button className='tool_button' id='line' ><svg width='26' height='26' viewBox='0 0 1000 1000' xmlns='http://www.w3.org/2000/svg'><path d='M 184 750C 184 750 184 750 184 750C 171 737 171 716 184 703C 184 703 703 184 703 184C 716 171 737 171 750 184C 750 184 816 250 816 250C 829 263 829 284 816 297C 816 297 297 816 297 816C 284 829 263 829 250 816C 250 816 184 750 184 750'/></svg></button>
                     <button className='tool_button' id='rectangle'><svg width='20' height='20' viewBox='0 0 1000 1000' xmlns='http://www.w3.org/2000/svg'><path d='M 50 0C 22 0 0 22 0 50C 0 50 0 950 0 950C 0 978 22 1000 50 1000C 50 1000 950 1000 950 1000C 978 1000 1000 978 1000 950C 1000 950 1000 50 1000 50C 1000 22 978 0 950 0C 950 0 50 0 50 0C 50 0 50 0 50 0M 0,0'/></svg></button>
                     <button className='tool_button' id='circle'><svg width='20' height='20' viewBox='0 0 1000 1000' xmlns='http://www.w3.org/2000/svg'><path d='M 500 0C 224 0 0 224 0 500C 0 776 224 1000 500 1000C 776 1000 1000 776 1000 500C 1000 224 776 0 500 0C 500 0 500 0 500 0M 0,0'/></svg></button>
+                    <button className='tool_button' id='undo' onClick={undoBoard}><svg width="24" height="24" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg"><path d="M 563 75C 563 75 563 118 563 118C 755 149 897 321 887 518C 877 728 702 891 493 887C 283 883 115 713 113 504C 112 483 129 466 150 465C 171 465 188 482 188 503C 189 673 325 809 494 812C 664 816 804 684 812 515C 820 359 712 224 563 194C 563 194 563 225 563 225C 562 240 553 254 539 260C 525 265 509 262 498 252C 498 252 423 177 423 177C 409 162 409 138 423 123C 423 123 498 48 498 48C 505 42 514 38 524 38C 545 37 562 54 563 75C 563 75 563 75 563 75"/></svg></button>
+                    {/* <button className='tool_button' id='redo' onClick={redoBoard}><svg width="24" height="24" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg"><path d="M 563 75C 563 75 563 118 563 118C 755 149 897 321 887 518C 877 728 702 891 493 887C 283 883 115 713 113 504C 112 483 129 466 150 465C 171 465 188 482 188 503C 189 673 325 809 494 812C 664 816 804 684 812 515C 820 359 712 224 563 194C 563 194 563 225 563 225C 562 240 553 254 539 260C 525 265 509 262 498 252C 498 252 423 177 423 177C 409 162 409 138 423 123C 423 123 498 48 498 48C 505 42 514 38 524 38C 545 37 562 54 563 75C 563 75 563 75 563 75" transform="translate(1000,0) scale(-1,1)"/></svg></button> */}
+
                     {/* <button className='' */}
                     <div id='size'>
                         <input type='range' onInput={(e) => {onSizeUpdate(e); onSizeCursorUpdate(e);}} min='1' max='100' class='slider'  id='size_slider' />

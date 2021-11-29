@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, useContext, useState } from 'react';
+import React, { useRef, useEffect, useContext } from 'react';
 import axios from 'axios';
-import {useHistory } from "react-router-dom";
+// import {useHistory } from "react-router-dom";
 import { AuthContext } from "../../helpers/AuthContext";
 import {toast} from 'react-toastify';
 import Control from '../control/Control';
@@ -16,17 +16,16 @@ const apiParticipations = axios.create({
 });
 
 
-const apiUser = axios.create({
-  baseURL: `${process.env.REACT_APP_API}/users/`
-})
+// const apiUser = axios.create({
+//   baseURL: `${process.env.REACT_APP_API}/users/`
+// })
 
 const Board = (props) => {
   const roomId = props.roomId;
-
-  const history = useHistory();
   const {authState} = useContext(AuthContext);
   const canvasRef = useRef(null);
   const spreadCanvasRef = useRef(null);
+  const previousBoard = useRef([])
   const tool = useRef('pencil');
   const color = useRef('#00000');
   const size = useRef(10);
@@ -36,6 +35,7 @@ const Board = (props) => {
   const dragimg = useRef(null);
   const status = useRef(true);
   const boardId = useRef(null);
+  const index = useRef(-1);
   
   const diffToast = (msg) => {
     toast(msg);
@@ -43,9 +43,10 @@ const Board = (props) => {
   }
   // emit data
   const emitCanvas = () => {
-    if(timeout.current != undefined) clearTimeout(timeout.current)
+    if(timeout.current !== undefined) clearTimeout(timeout.current)
         timeout.current = setTimeout(function() {
           let base64ImageData = canvasRef.current.toDataURL("image/png");
+          previousBoard.current.push(base64ImageData)
           authState.socket.emit("canvas-data", {roomId,base64ImageData});
           updateBoard(base64ImageData);
         }, 200);
@@ -72,24 +73,41 @@ const Board = (props) => {
 
   const onToolUpdate = (e) => {
     //Check have any dragimg, draw to maincavas and remove dragimg
-    if(dragimg.current !== null) {
-      const ctx = canvasRef.current.getContext('2d');
-      const spreadctx = spreadCanvasRef.current.getContext('2d');
-      const delX = previous.current[1].x - previous.current[0].x;
-      const delY = previous.current[1].y - previous.current[0].y;
-      const img = new Image();
-      img.src = dragimg.current;
-      img.onload = () => {
-        ctx.drawImage(img, delX + canvasRef.current.width/2, delY + canvasRef.current.height/2);
+    if(e.currentTarget.id !== 'undo' && e.currentTarget.id !== 'redo') {
+      if(dragimg.current !== null) {
+        const ctx = canvasRef.current.getContext('2d');
+        const spreadctx = spreadCanvasRef.current.getContext('2d');
+        const delX = previous.current[1].x - previous.current[0].x;
+        const delY = previous.current[1].y - previous.current[0].y;
+        const img = new Image();
+        img.src = dragimg.current;
+        img.onload = () => {
+          ctx.drawImage(img, delX + canvasRef.current.width/2, delY + canvasRef.current.height/2);
+        }
+        dragimg.current = null;
+        previous.current = [];
+        spreadctx.clearRect(0,0, spreadCanvasRef.current.width, spreadCanvasRef.current.height);
+        emitCanvas();
       }
-      dragimg.current = null;
-      previous.current = [];
-      spreadctx.clearRect(0,0, spreadCanvasRef.current.width, spreadCanvasRef.current.height);
-      emitCanvas();
+      tool.current = e.currentTarget.id;
+      // update cursor
+      updateCursor(e.currentTarget.id);
+    }else {
+      if(dragimg.current !== null) {
+        const spreadctx = spreadCanvasRef.current.getContext('2d');
+        dragimg.current = null;
+        previous.current = [];
+        updateCursor('pencil');
+        spreadctx.clearRect(0,0, spreadCanvasRef.current.width, spreadCanvasRef.current.height);
+      }
     }
-    tool.current = e.currentTarget.id;
+    
+    if(e.currentTarget.id !== 'undo' || e.currentTarget.id !== 'redo'){
+      tool.current = e.currentTarget.id;
     // update cursor
-    updateCursor(e.currentTarget.id);
+      updateCursor(e.currentTarget.id);
+    }
+    
   };
 
   const onSizeUpdate = (e) =>{
@@ -115,6 +133,36 @@ const Board = (props) => {
     context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     authState.socket.emit("refresh", {roomId});
   }
+
+  const drawImage = (data) => {
+    const context = canvasRef.current.getContext('2d');
+    let image = new Image();
+    image.onload = function(){
+      context.drawImage(image, 0, 0);
+    };
+    image.src = data;
+  }
+
+  // undo board
+  const undoBoard = () => {
+    if(previousBoard.current.length > 1) {
+      let data = previousBoard.current.slice(-2)[0];
+      previousBoard.current.splice(-2, 2);
+      drawImage(data);      
+      emitCanvas();
+    }
+  }
+
+  const redoBoard = () => {
+    if(index.current !== -1) {
+      index.current = index.current + 1;
+      let data = previousBoard.current.slice(index.current)[0];
+      drawImage(data);
+      emitCanvas();
+    }
+  }
+
+  
 
   // download canvas
   const download = (e) => {
@@ -194,6 +242,7 @@ const Board = (props) => {
     
     // retrive data board when access
     const getBoard = (roomId) => {
+      console.log('ngoc')
       apiBoard.get(`/${roomId}`,{ 
         headers: { accessToken: localStorage.getItem("accessToken")},
       })
@@ -425,7 +474,6 @@ const Board = (props) => {
     };
 
     const onMouseMove = (e) => {
-      console.log(status.current);
       if (!drawing) { return; }
       let data = {
         x0: current.x,
@@ -439,7 +487,6 @@ const Board = (props) => {
       if(status.current) {
         tools[tool.current].draw(data);
       }else {
-        console.log(authState.status);
         diffToast('Only see !')
       }
       // drawLine(current.x, current.y, e.clientX || e.touches.clientX, e.clientY || e.touches.clientY, color.current, size.current, true);
@@ -514,6 +561,7 @@ const Board = (props) => {
         ctx.drawImage(image, 0, 0);
       };
       image.src = data;
+      previousBoard.current.push(data);
     };
 
     authState.socket.on('canvas-data', onDrawingEvent);
@@ -525,7 +573,6 @@ const Board = (props) => {
     authState.socket.on('roleStatus', (data) => {
       updateRoleRef();
   });
-    // onDrawingEvent(getBoard(roomId));
   }, []);
 
   // ------------- The Canvas and color elements --------------------------
@@ -534,7 +581,7 @@ const Board = (props) => {
     <div id="whiteboard-container">
       <canvas ref={canvasRef} className="board" />
       <canvas ref= {spreadCanvasRef} className = "spreadboard" />
-      <Control onColorUpdate = {onColorUpdate} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate} download={download} refresh={refresh} uploadImage={uploadImage} roomId = {roomId}/>
+      <Control onColorUpdate = {onColorUpdate} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate} download={download} refresh={refresh} uploadImage={uploadImage} undoBoard={undoBoard} redoBoard={redoBoard} roomId = {roomId}/>
       <Chat roomId={roomId}/>
     </div>
   );

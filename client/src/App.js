@@ -14,7 +14,7 @@ import {ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {io} from 'socket.io-client';
 import { AuthContext } from './helpers/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 const socket = io(`${process.env.REACT_APP_API}`);
 function App() {
   const [authState, setAuthState] = useState({status: true, socket: socket});

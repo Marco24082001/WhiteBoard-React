@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../helpers/AuthContext';
 import {FaComment, FaComments, FaChevronDown} from 'react-icons/fa';
-import user from '../../images/question.png';
 import {toast} from 'react-toastify';
 import './style.css';
 
