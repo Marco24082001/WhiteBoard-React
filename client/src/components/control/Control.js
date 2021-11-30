@@ -359,7 +359,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
         }
 
         const tools = document.getElementsByClassName('tool_button');
-        for(let i = 0; i < tools.length - 2; i++) {
+        for(let i = 0; i < tools.length - 1; i++) {
             tools[i].addEventListener('click', (e) => {
                 onToolUpdate(e);
                 let tool = document.getElementsByClassName('tool_button selected');

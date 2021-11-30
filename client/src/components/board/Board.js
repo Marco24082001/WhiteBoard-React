@@ -44,7 +44,7 @@ const Board = (props) => {
   // emit data
   const emitCanvas = () => {
     if(timeout.current !== undefined) clearTimeout(timeout.current)
-        timeout.current = setTimeout(function() {
+        timeout.current = setTimeout(() => {
           let base64ImageData = canvasRef.current.toDataURL("image/png");
           previousBoard.current.push(base64ImageData)
           authState.socket.emit("canvas-data", {roomId,base64ImageData});
@@ -131,10 +131,12 @@ const Board = (props) => {
   const refresh = () => {
     const context = canvasRef.current.getContext('2d');
     context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    context.fillStyle = "white";
+    context.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     authState.socket.emit("refresh", {roomId});
   }
 
-  const drawImage = (data) => {
+  const drawImg = (data) => {
     const context = canvasRef.current.getContext('2d');
     let image = new Image();
     image.onload = function(){
@@ -148,7 +150,7 @@ const Board = (props) => {
     if(previousBoard.current.length > 1) {
       let data = previousBoard.current.slice(-2)[0];
       previousBoard.current.splice(-2, 2);
-      drawImage(data);      
+      drawImg(data);      
       emitCanvas();
     }
   }
@@ -157,7 +159,7 @@ const Board = (props) => {
     if(index.current !== -1) {
       index.current = index.current + 1;
       let data = previousBoard.current.slice(index.current)[0];
-      drawImage(data);
+      drawImg(data);
       emitCanvas();
     }
   }
@@ -569,6 +571,8 @@ const Board = (props) => {
     authState.socket.on('refresh', () => {
       const context = canvasRef.current.getContext('2d');
       context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      context.fillStyle = "white";
+      context.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     });
     authState.socket.on('roleStatus', (data) => {
       updateRoleRef();
