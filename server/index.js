@@ -84,11 +84,11 @@ function onConnection(socket){
 io.on('connection', onConnection);
 
 // Routers
-const postRouter = require('./routes/Boards');
+const postRouter = require('./routes/board.route');
 app.use('/boards', postRouter);
-const usersRouter = require('./routes/Users');
+const usersRouter = require('./routes/user.route');
 app.use('/users', usersRouter);
-const participateRouter = require('./routes/Participations');
+const participateRouter = require('./routes/participation.route');
 app.use('/participations', participateRouter);
 
 const PORT = process.env.PORT || 8080;

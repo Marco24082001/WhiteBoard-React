@@ -1,10 +1,8 @@
-const express = require('express');
-const router = express.Router();
 const {Room_participant} = require('../models');
-const { validateToken } = require("../middlewares/AuthMiddleware");
-const shortid = require('shortid');
+
 // 1: owner, 2: admin, 3: guest, 4: kicked
-router.post('/create', validateToken, (req, res) => {
+
+module.exports.create = function(req, res) {
     let {boardId, role_id} = req.body;
     // let exist_participant = await Boards.findOne({
     //     where: {
@@ -19,10 +17,10 @@ router.post('/create', validateToken, (req, res) => {
         role_id: role_id
     }).then(() => { 
         res.json("Successfully!")
-    }).catch((err) => res.json({error: err}))
-} )
+    }).catch((err) => res.json({error: err}));
+};
 
-router.get('/isParticipant/:boardId', validateToken, async (req, res) => {
+module.exports.isParticipant = async function(req, res) {
     const userId = req.user.id;
     console.log(req.params.boardId);
     const boardId = req.params.boardId;
@@ -44,10 +42,10 @@ router.get('/isParticipant/:boardId', validateToken, async (req, res) => {
     }
     else {
         return res.json({role_id: participant.role_id})
-    }
-})
+    };
+};
 
-router.put('/updateRole', validateToken, async (req, res) => {
+module.exports.updateRole = async function(req, res) {
     const {userId, boardId, role_id} = req.body;
     console.log('vao dc day roi')
     Room_participant.update(
@@ -62,6 +60,4 @@ router.put('/updateRole', validateToken, async (req, res) => {
         }
     ).then((rs) => res.json("Successfully!"))
      .catch((err) => res.json({error: err}));
-})
-
-module.exports = router;
+};
