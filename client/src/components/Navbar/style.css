@@ -6,7 +6,7 @@
   left: 0;
   top: 0;
   width: 100%;
-  opacity: 0;
+  /* opacity: 0; */
 }
 
 .nav-bar:hover {
@@ -24,7 +24,7 @@
   color: white;
   font-size: 27px;
   font-weight: 600;
-  line-height: 70px;
+  line-height: 60px;
   padding-left: 60px;
 }
 
@@ -40,13 +40,13 @@
   display: inline-block;
   background: #1b1b1b;
   margin: 0 5px;  
-  line-height: 70px;
+  line-height: 60px;
 }
 
 .nav-bar ul li a {
   color: white;
   text-decoration: none;
-  line-height: 70px;
+  line-height: 60px;
   font-size: 18px;
   padding: 8px 15px
 }
@@ -71,7 +71,7 @@
   border-top: none;
 }
 .nav-bar ul li:hover > ul {
-  top: 70px;
+  top: 60px;
   opacity: 1;
   visibility: visible;
 
@@ -96,7 +96,7 @@
 
 .nav-bar ul ul ul li {
   position: relative;
-  top: -70px;
+  top: -60px;
   left: 150px;
 }
 

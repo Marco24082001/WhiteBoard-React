@@ -11,8 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.belongsTo(models.Users, {foreignKey: 'userId'});
-      this.belongsTo(models.Boards, {foreignKey: 'boardId'});
+      this.belongsTo(models.Users, { onDelete: 'cascade', foreignKey: 'userId'});
+      this.belongsTo(models.Boards, { onDelete: 'cascade', foreignKey: 'boardId'});
     }
   };
   Room_participant.init({

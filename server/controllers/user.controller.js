@@ -15,28 +15,30 @@ const transporter = nodemailer.createTransport(sendgridTransport({
 
 module.exports.signup = async function(req, res) {
     const { username, password, email, photo } = req.body;
-  const _user = await Users.findOne({ where: { email: email } });
-  if(_user) return res.json({ error: "Email has existed" });
-  bcrypt.hash(password, 10).then((hash) => {
-    Users.create({
-      username: username,
-      password: hash,
-      email: email,
-      photo: photo
-    });
-    const user = Users.findOne({ where: { email: email } });
-    transporter.sendMail({
-      to: email,
-      from:"thiendia.dn113@gmail.com",
-      subject:"signup success",
-      html:"<h1>welcom to TingTy</h1>"
-    })
-    const accessToken = sign(
-      { username: user.username, id: user.id },
-      process.env.KEY_SIGN
-    );
-    res.json(accessToken);
+    const _user = await Users.findOne({ where: { email: email } });
+    if(_user) return res.json({ error: "Email has existed" });
+    bcrypt.hash(password, 10).then((hash) => {
+        Users.create({
+            username: username,
+            password: hash,
+            email: email,
+            photo: photo
+        }).then((user) => {
+            const accessToken = sign(
+                { username: user.username, id: user.id },
+                    process.env.KEY_SIGN
+                );
+            res.json(accessToken);
+        });
+        transporter.sendMail({
+            to: email,
+            from:"thiendia.dn113@gmail.com",
+            subject:"signup success",
+            html:"<h1>welcom to TingTy</h1>"
+        })
   });
+
+  
 };
 
 module.exports.login = async function(req, res) {

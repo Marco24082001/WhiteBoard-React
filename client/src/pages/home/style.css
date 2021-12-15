@@ -12,7 +12,7 @@
     height:100vh;   
     justify-content:flex-start;
     padding:6%;
-    overflow-y:scroll;
+    /* overflow-y:scroll; */
 }
 
 
