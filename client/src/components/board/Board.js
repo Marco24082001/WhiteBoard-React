@@ -71,22 +71,75 @@ const Board = (props) => {
     color.current = colour;
   };
 
+  const drawGrid = () => {
+    const ctx = canvasRef.current.getContext('2d');
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    for(let i = 10; i <= canvasRef.current.width - 10; i = i + 10)
+    {
+      ctx.moveTo(i, 10);
+      ctx.lineTo(i, canvasRef.current.height - 10);
+      ctx.strokeStyle = '#f0f0f0';
+      ctx.stroke();
+    }
+    for(let i = 10; i <= canvasRef.current.height - 10; i = i + 10){
+      ctx.moveTo(10, i);
+      ctx.lineTo(canvasRef.current.width - 10, i);
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    for(let i = 10; i <= canvasRef.current.width - 10; i = i + 50)
+    {
+      ctx.moveTo(i, 10);
+      ctx.lineTo(i, canvasRef.current.height - 10);
+      ctx.strokeStyle = '#c0c0c0';
+      ctx.stroke();
+    }
+    for(let i = 10; i <= canvasRef.current.height - 10; i = i + 50){
+      ctx.moveTo(10, i);
+      ctx.lineTo(canvasRef.current.width - 10, i);
+      ctx.stroke();
+    }
+
+
+    // ctx.beginPath();
+    // for(let i = 0; i <= canvasRef.current.width - 10; i = i + 50){
+    //   ctx.moveTo(i, 0);
+    //   ctx.lineTo(i, canvasRef.current.width - 10);
+
+    //   ctx.moveTo(0, i);
+    //   ctx.lineTo(canvasRef.current.width - 10, i);
+    //   ctx.strokeStyle = '#f0f0f0';
+    //   ctx.stroke();
+    // }
+
+    ctx.strokeStyle = 'black';
+  }
+
   const onToolUpdate = (e) => {
     //Check have any dragimg, draw to maincavas and remove dragimg
     if(e.currentTarget.id !== 'undo' && e.currentTarget.id !== 'redo') {
       if(dragimg.current !== null) {
-        const ctx = canvasRef.current.getContext('2d');
-        const spreadctx = spreadCanvasRef.current.getContext('2d');
-        const delX = previous.current[1].x - previous.current[0].x;
-        const delY = previous.current[1].y - previous.current[0].y;
+        const dragImg = document.querySelector('.item');
         const img = new Image();
-        img.src = dragimg.current;
+        let bg = dragImg.style.backgroundImage;
+        bg = bg.replace('url(','').replace(')','').replace('"','').replace('"','');
+        const ctx = canvasRef.current.getContext('2d');
+        // const delX = previous.current[1].x - previous.current[0].x;
+        // const delY = previous.current[1].y - previous.current[0].y;
+        // const img = new Image();
+        // img.src = dragimg.current;
         img.onload = () => {
-          ctx.drawImage(img, delX + canvasRef.current.width/2, delY + canvasRef.current.height/2);
+          ctx.drawImage(img,parseFloat(dragImg.style.left), parseFloat(dragImg.style.top), parseFloat(dragImg.style.width), parseFloat(dragImg.style.height));
         }
+        img.src = bg;
+        // ctx.drawImage(img,parseFloat(img.style.left), parseFloat(img.style.top), img.clientWidth, img.clientHeight)
+        // ctx.drawImage(img, canvasRef.current.width/2, canvasRef.current.height/2);
         dragimg.current = null;
         previous.current = [];
-        spreadctx.clearRect(0,0, spreadCanvasRef.current.width, spreadCanvasRef.current.height);
+        dragImg.remove();
         emitCanvas();
       }
       tool.current = e.currentTarget.id;
@@ -129,18 +182,15 @@ const Board = (props) => {
 
   // refresh canvas
   const refresh = () => {
-    const context = canvasRef.current.getContext('2d');
-    context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    context.fillStyle = "white";
-    context.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    drawGrid();
     authState.socket.emit("refresh", {roomId});
   }
 
   const drawImg = (data) => {
-    const context = canvasRef.current.getContext('2d');
+    const ctx = canvasRef.current.getContext('2d');
     let image = new Image();
     image.onload = function(){
-      context.drawImage(image, 0, 0);
+      ctx.drawImage(image, 0, 0);
     };
     image.src = data;
   }
@@ -192,17 +242,115 @@ const Board = (props) => {
 
   // upload image 
   const uploadImage = (e) => {
+    const cnt_board = document.getElementById('whiteboard-container')
     const reader = new FileReader();
     const img = new Image();
-    const ctx = spreadCanvasRef.current.getContext('2d');
+    const dragImg = document.createElement('div');
+    const resizer_ne = document.createElement('div');
+    const resizer_nw = document.createElement('div');
+    const resizer_sw = document.createElement('div');
+    const resizer_se = document.createElement('div');
+    resizer_ne.classList.add('resizer', 'ne');
+    resizer_nw.classList.add('resizer', 'nw');
+    resizer_sw.classList.add('resizer', 'sw');
+    resizer_se.classList.add('resizer', 'se');
+    dragImg.classList.add('item');
+    dragImg.appendChild(resizer_ne);
+    dragImg.appendChild(resizer_nw);
+    dragImg.appendChild(resizer_sw);
+    dragImg.appendChild(resizer_se);
+    cnt_board.appendChild(dragImg);
+    let isResizing = false;
+    dragImg.addEventListener('mousedown', mousedown);
+    function mousedown(e) {
+      dragImg.ondragstart = function () {return false};
+      window.addEventListener('mousemove', mousemove);
+      window.addEventListener('mouseup', mouseup);
+      
+      let prevX = e.clientX;
+      let prevY = e.clientY;
+
+      function mousemove(e) {
+        // console.log(e.clientX);
+        if(!isResizing){
+          let newX = prevX - e.clientX;
+          let newY = prevY - e.clientY;
+  
+          const rect = dragImg.getBoundingClientRect();
+          dragImg.style.left = rect.left - newX + 'px';
+          dragImg.style.top = rect.top - newY + 'px';
+  
+          prevX = e.clientX;
+          prevY = e.clientY;
+        }
+        
+      }
+
+      function mouseup() {
+        window.removeEventListener('mousemove', mousemove);
+        window.removeEventListener('mouseup', mouseup);
+      }
+    }
+
+    const resizers = document.querySelectorAll('.resizer');
+    let currentResize;
+    for(let resizer of resizers){
+      resizer.addEventListener('mousedown', mousedown);
+      function mousedown(e) {
+        currentResize = e.target;
+        isResizing = true;
+
+        let prevX = e.clientX;
+        let prevY = e.clientY;
+
+        window.addEventListener('mousemove', mousemove);
+        window.addEventListener('mouseup', mouseup);
+
+        function mousemove(e) {
+          const rect = dragImg.getBoundingClientRect();
+          if(currentResize.classList.contains('se')){
+            dragImg.style.width = rect.width - (prevX - e.clientX) + 'px';
+            dragImg.style.height = rect.height - (prevY - e.clientY) + 'px';
+          }else if(currentResize.classList.contains('sw')){
+            dragImg.style.width = rect.width + (prevX - e.clientX) + 'px';
+            dragImg.style.height = rect.height - (prevY - e.clientY) + 'px';
+            dragImg.style.left = rect.left - (prevX - e.clientX) + 'px';
+          }else if(currentResize.classList.contains('ne')){
+            dragImg.style.width = rect.width - (prevX - e.clientX) + 'px';
+            dragImg.style.height = rect.height + (prevY - e.clientY) + 'px';
+            dragImg.style.top = rect.top - (prevY - e.clientY) + 'px';
+          }
+          else {
+            dragImg.style.width = rect.width + (prevX - e.clientX) + 'px';
+            dragImg.style.height = rect.height + (prevY - e.clientY) + 'px';
+            dragImg.style.top = rect.top - (prevY - e.clientY) + 'px';
+            dragImg.style.left = rect.left - (prevX - e.clientX) + 'px';
+          }
+
+          prevX = e.clientX;
+          prevY = e.clientY;
+        }
+
+        function mouseup() {
+          window.removeEventListener('mousemove', mousemove);
+          window.removeEventListener('mouseup', mouseup);
+          isResizing = false;
+        }
+      }
+    }
+    // const ctx = spreadCanvasRef.current.getContext('2d');
     reader.onload = () => {
-      img.onload = () => {
-        ctx.drawImage(img, spreadCanvasRef.current.width/2, spreadCanvasRef.current.height/2);
+      img.onload = function() {
+        // ctx.drawImage(img, spreadCanvasRef.current.width/2 - this.width/2, spreadCanvasRef.current.height/2 - this.height/2);
+        // img.src = reader.result;
+        dragImg.style.backgroundImage = `url('${reader.result}')`
+        dragImg.style.left = spreadCanvasRef.current.width/2 - this.width/2 + 'px';
+        dragImg.style.top = spreadCanvasRef.current.height/2 - this.height/2 + 'px';
+        dragImg.style.width = this.width + 'px';
+        dragImg.style.height = this.height + 'px';
       };
       img.src = reader.result;
-      dragimg.current = reader.result;
-      
-    };
+      dragimg.current = reader.result;    };
     reader.readAsDataURL(e.currentTarget.files[0]);
     document.getElementById('drag').click();
   }
@@ -234,7 +382,6 @@ const Board = (props) => {
           .then((res) => {
               if(res.data.role_id === 4) { // kicked: 5
                   status.current = false;
-                  console.log('vl')
               }else {
                 status.current = true;
               }
@@ -254,9 +401,9 @@ const Board = (props) => {
           title.current = res.data.title;
         }
         else {
-          const ctx = canvasRef.current.getContext('2d');
-          ctx.fillStyle = "white";
-          ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+          drawGrid();
+          let base64ImageData = canvasRef.current.toDataURL("image/png");
+          previousBoard.current.push(base64ImageData)
         }
       })
     }
@@ -456,10 +603,10 @@ const Board = (props) => {
             const delY = previous.current[1].y - previous.current[0].y;
             const img = new Image();
             img.src = dragimg.current;
-            img.onload = () => {
+            img.onload = function() {
               setTimeout(() => {
                 spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
-                spreadctx.drawImage(img, delX + spreadCanvas.width/2, delY + spreadCanvas.height/2);
+                spreadctx.drawImage(img, delX + spreadCanvas.width/2 - this.width/2, delY + spreadCanvas.height/2 - this.height/2);
               }, 200);
             }
           }
@@ -569,10 +716,7 @@ const Board = (props) => {
     authState.socket.on('canvas-data', onDrawingEvent);
     authState.socket.on('share-data', emitCanvas);
     authState.socket.on('refresh', () => {
-      const context = canvasRef.current.getContext('2d');
-      context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      context.fillStyle = "white";
-      context.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      drawGrid();
     });
     authState.socket.on('roleStatus', (data) => {
       updateRoleRef();
