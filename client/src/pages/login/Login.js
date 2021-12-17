@@ -89,11 +89,12 @@ function Login() {
         diffToast(res.data.error);
         // alert(res.data.error);
       } else {
+        console.log(room);
         localStorage.setItem('accessToken', res.data); 
         // setAuthState((previousState) => {
         //   return {...previousState, status: true}
         // });
-        if(room.id !== undefined) history.push(`board/${room.id}`)
+        if(room.id !== undefined) history.push(`/board/${room.id}`)
         else history.push('/');
       }
     });

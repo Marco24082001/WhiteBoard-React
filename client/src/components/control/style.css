@@ -34,6 +34,12 @@
     cursor: pointer;
 }
 
+#text {
+    color: white;
+    font-size: 23px;
+    line-height: 23px;
+}
+
 .tool_button svg {
     fill: white;
     vertical-align: middle;

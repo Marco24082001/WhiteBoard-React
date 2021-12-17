@@ -33,8 +33,10 @@
     background-position:center;
     background-repeat: no-repeat;
     background-size: cover;
-    /* z-index: 100000; */
-    pointer-events:visible;
+    z-index: 2;
+    border: dotted 3px cyan;
+    cursor: move;
+    display: none;
   }
   
   .resizer {
@@ -43,25 +45,112 @@
     height: 10px;
     background-color: black;
     z-index: 2;
+    border-radius: 50%;
   }
   
   .resizer.nw {
-    top: -1px;
-    left: -1px;
+    top: -4px;
+    left: -4px;
     cursor: nw-resize;
   }
   .resizer.ne{
-    top: -1px;
-    right: -1px;
+    top: -4px;
+    right: -4px;
     cursor: ne-resize;
   }
   .resizer.sw{
-    bottom: -1px;
-    left: -1px;
+    bottom: -4px;
+    left: -4px;
     cursor: sw-resize;
   }
   .resizer.se{
-    bottom: -1px;
-    right: -1px;
+    bottom: -4px;
+    right: -4px;
     cursor: se-resize;
+  }
+
+  .tool_drag {
+    position: absolute;
+    display: flex;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    
+    flex-direction: row;
+    justify-content:space-evenly;
+    gap: 1px;
+    bottom: 0px;
+    
+    z-index: 3;
+    align-items: center;
+    padding: 2px;
+    cursor: pointer;
+  }
+
+  .tool_drag span {
+    display: block;
+    background-color: black;
+    /* font-size: 18px; */
+    color:white;
+    padding: 1px;
+    font-size: 23px;
+  }
+
+  .tool_drag span svg {
+    vertical-align: middle;
+  }
+
+  .tool_drag span:hover {
+    background-color: rgb(54, 48, 48);
+  }
+
+  .text-container {
+    display:none;
+    position: absolute;
+    /* left: 50%; */
+    /* top:50%; */
+    z-index: 3;
+    /* width: 100px;
+    background-color: rebeccapurple;
+    height: 20px; */
+    height: 25px;
+  }
+
+  #textbox {
+    position:absolute;
+    font-family: Comic;
+    font-size: 15px;
+    padding: 2px;
+  }
+
+  .tool_text {
+    position: absolute;
+    display: flex;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    flex-direction: row;
+    justify-content:space-evenly;
+    gap: 1px;
+    bottom: 0px;
+    
+    z-index: 3;
+    align-items: center;
+    padding: 2px;
+    cursor: pointer;
+  }
+
+  .tool_text span {
+    display: block;
+    background-color: black;
+    /* font-size: 18px; */
+    color:white;
+    padding: 1px;
+    font-size: 15px;
+  }
+
+  .tool_text span svg {
+    vertical-align: middle;
+  }
+
+  .tool_text span:hover {
+    background-color: rgb(54, 48, 48);
   }

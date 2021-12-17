@@ -5,6 +5,9 @@ import { AuthContext } from "../../helpers/AuthContext";
 import {toast} from 'react-toastify';
 import Control from '../control/Control';
 import Chat from '../chat/Chat';
+import {IoMdTrash} from 'react-icons/io';
+import {AiTwotoneLock} from 'react-icons/ai';
+
 import './style.css';
 
 const apiBoard = axios.create({
@@ -32,10 +35,10 @@ const Board = (props) => {
   const timeout = useRef();
   const previous = useRef([]);
   const title = useRef();
-  const dragimg = useRef(null);
   const status = useRef(true);
   const boardId = useRef(null);
   const index = useRef(-1);
+  const isdrag = useRef(false);
   
   const diffToast = (msg) => {
     toast(msg);
@@ -54,15 +57,19 @@ const Board = (props) => {
 
   // update cursor
   const updateCursor = (cursor) => {
+    const cs = document.querySelector('.cursor');
     switch(cursor) {
-      case 'drag':
+      case 'text':
         spreadCanvasRef.current.style.cursor = 'move';
+        cs.style.display = 'none';
         break;
       case 'pencil':
         spreadCanvasRef.current.style.cursor = 'none';
+        cs.style.display = 'block';
         break;
       default:
         spreadCanvasRef.current.style.cursor = 'none';
+        cs.style.display = 'block';
     }
   }
 
@@ -71,10 +78,98 @@ const Board = (props) => {
     color.current = colour;
   };
 
+  const drawImageProp = (ctx, img, x, y, w, h, offsetX, offsetY) => {
+    // default offset is center
+    offsetX = typeof offsetX === "number" ? offsetX : 0.5;
+    offsetY = typeof offsetY === "number" ? offsetY : 0.5;
+
+    // keep bounds [0.0, 1.0]
+    if (offsetX < 0) offsetX = 0;
+    if (offsetY < 0) offsetY = 0;
+    if (offsetX > 1) offsetX = 1;
+    if (offsetY > 1) offsetY = 1;
+
+    var iw = img.width,
+        ih = img.height,
+        r = Math.min(w / iw, h / ih),
+        nw = iw * r,   // new prop. width
+        nh = ih * r,   // new prop. height
+        cx, cy, cw, ch, ar = 1;
+
+    // decide which gap to fill    
+    if (nw < w) ar = w / nw;                             
+    if (Math.abs(ar - 1) < 1e-14 && nh < h) ar = h / nh;  // updated
+    nw *= ar;
+    nh *= ar;
+
+    // calc source rectangle
+    cw = iw / (nw / w);
+    ch = ih / (nh / h);
+
+    cx = (iw - cw) * offsetX;
+    cy = (ih - ch) * offsetY;
+
+    // make sure source rectangle is valid
+    if (cx < 0) cx = 0;
+    if (cy < 0) cy = 0;
+    if (cw > iw) cw = iw;
+    if (ch > ih) ch = ih;
+
+      // fill image in dest. rectangle
+    ctx.drawImage(img, cx, cy, cw, ch,  x, y, w, h);
+  }
+
+  const lockimg = () => {
+      const dragImg = document.querySelector('.item');
+      const img = new Image();
+      let bg = dragImg.style.backgroundImage;
+      bg = bg.replace('url(','').replace(')','').replace('"','').replace('"','');
+      const ctx = canvasRef.current.getContext('2d');
+      img.onload = () => {
+        drawImageProp(ctx, img, parseFloat(dragImg.style.left), parseFloat(dragImg.style.top), parseFloat(dragImg.style.width), parseFloat(dragImg.style.height), 0.5, 0.5)
+        // ctx.drawImage(img,parseFloat(dragImg.style.left), parseFloat(dragImg.style.top), parseFloat(dragImg.style.width), parseFloat(dragImg.style.height));
+      }
+      img.src = bg;
+      dragImg.style.display = 'none';
+      dragImg.replaceWith(dragImg.cloneNode(true));
+      emitCanvas();
+      
+  }
+
+  const locktxt = () => {
+    const textboxEle = document.getElementById('textbox');
+    const textctn = document.querySelector('.text-container');
+    // textctn.style.display = 'none';
+    const ctx = canvasRef.current.getContext('2d');
+    ctx.font = "15px Comic Sans MS";
+    // ctx.fontSize = '20';
+    ctx.fontFamily = textboxEle.style.fontFamily;
+    ctx.fillStyle = color.current;
+    // ctx.textAlign = "center";
+    let rect = textboxEle.getBoundingClientRect();
+    ctx.fillText(textboxEle.value, parseFloat(rect.left), parseFloat(rect.top) + parseFloat(rect.height)/2);
+    textctn.style.display = 'none';
+    emitCanvas();
+    console.log('sdfsdfsdf');
+  }
+
+  const removeimg = () => {
+    const dragImg = document.querySelector('.item');
+    dragImg.style.display = 'none';
+    // dragImg.replaceWith(dragImg.cloneNode(true));
+  }
+
+  const removetxt = () => {
+    const textctn = document.querySelector('.text-container');
+    textctn.style.display = 'none';
+  }
+
   const drawGrid = () => {
     const ctx = canvasRef.current.getContext('2d');
-    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    ctx.beginPath();
+    ctx.lineWidth = 1;
     ctx.fillStyle = "white";
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     for(let i = 10; i <= canvasRef.current.width - 10; i = i + 10)
     {
@@ -116,51 +211,14 @@ const Board = (props) => {
     // }
 
     ctx.strokeStyle = 'black';
+    ctx.closePath();
   }
 
   const onToolUpdate = (e) => {
-    //Check have any dragimg, draw to maincavas and remove dragimg
-    if(e.currentTarget.id !== 'undo' && e.currentTarget.id !== 'redo') {
-      if(dragimg.current !== null) {
-        const dragImg = document.querySelector('.item');
-        const img = new Image();
-        let bg = dragImg.style.backgroundImage;
-        bg = bg.replace('url(','').replace(')','').replace('"','').replace('"','');
-        const ctx = canvasRef.current.getContext('2d');
-        // const delX = previous.current[1].x - previous.current[0].x;
-        // const delY = previous.current[1].y - previous.current[0].y;
-        // const img = new Image();
-        // img.src = dragimg.current;
-        img.onload = () => {
-          ctx.drawImage(img,parseFloat(dragImg.style.left), parseFloat(dragImg.style.top), parseFloat(dragImg.style.width), parseFloat(dragImg.style.height));
-        }
-        img.src = bg;
-        // ctx.drawImage(img,parseFloat(img.style.left), parseFloat(img.style.top), img.clientWidth, img.clientHeight)
-        // ctx.drawImage(img, canvasRef.current.width/2, canvasRef.current.height/2);
-        dragimg.current = null;
-        previous.current = [];
-        dragImg.remove();
-        emitCanvas();
-      }
+    if(e.currentTarget.id !== 'undo') {
       tool.current = e.currentTarget.id;
-      // update cursor
       updateCursor(e.currentTarget.id);
-    }else {
-      if(dragimg.current !== null) {
-        const spreadctx = spreadCanvasRef.current.getContext('2d');
-        dragimg.current = null;
-        previous.current = [];
-        updateCursor('pencil');
-        spreadctx.clearRect(0,0, spreadCanvasRef.current.width, spreadCanvasRef.current.height);
-      }
-    }
-    
-    if(e.currentTarget.id !== 'undo' || e.currentTarget.id !== 'redo'){
-      tool.current = e.currentTarget.id;
-    // update cursor
-      updateCursor(e.currentTarget.id);
-    }
-    
+    } 
   };
 
   const onSizeUpdate = (e) =>{
@@ -242,24 +300,12 @@ const Board = (props) => {
 
   // upload image 
   const uploadImage = (e) => {
-    const cnt_board = document.getElementById('whiteboard-container')
+    document.querySelector('#lockimg').addEventListener('click', lockimg);
+    document.querySelector('#removeimg').addEventListener('click', removeimg);
     const reader = new FileReader();
     const img = new Image();
-    const dragImg = document.createElement('div');
-    const resizer_ne = document.createElement('div');
-    const resizer_nw = document.createElement('div');
-    const resizer_sw = document.createElement('div');
-    const resizer_se = document.createElement('div');
-    resizer_ne.classList.add('resizer', 'ne');
-    resizer_nw.classList.add('resizer', 'nw');
-    resizer_sw.classList.add('resizer', 'sw');
-    resizer_se.classList.add('resizer', 'se');
-    dragImg.classList.add('item');
-    dragImg.appendChild(resizer_ne);
-    dragImg.appendChild(resizer_nw);
-    dragImg.appendChild(resizer_sw);
-    dragImg.appendChild(resizer_se);
-    cnt_board.appendChild(dragImg);
+    const dragImg = document.querySelector('.item');
+    dragImg.style.display = 'block';
     let isResizing = false;
     dragImg.addEventListener('mousedown', mousedown);
     function mousedown(e) {
@@ -295,6 +341,7 @@ const Board = (props) => {
     const resizers = document.querySelectorAll('.resizer');
     let currentResize;
     for(let resizer of resizers){
+      // resizer.replaceWith(resizer.cloneNode(true));
       resizer.addEventListener('mousedown', mousedown);
       function mousedown(e) {
         currentResize = e.target;
@@ -341,8 +388,6 @@ const Board = (props) => {
     // const ctx = spreadCanvasRef.current.getContext('2d');
     reader.onload = () => {
       img.onload = function() {
-        // ctx.drawImage(img, spreadCanvasRef.current.width/2 - this.width/2, spreadCanvasRef.current.height/2 - this.height/2);
-        // img.src = reader.result;
         dragImg.style.backgroundImage = `url('${reader.result}')`
         dragImg.style.left = spreadCanvasRef.current.width/2 - this.width/2 + 'px';
         dragImg.style.top = spreadCanvasRef.current.height/2 - this.height/2 + 'px';
@@ -350,9 +395,8 @@ const Board = (props) => {
         dragImg.style.height = this.height + 'px';
       };
       img.src = reader.result;
-      dragimg.current = reader.result;    };
+    };
     reader.readAsDataURL(e.currentTarget.files[0]);
-    document.getElementById('drag').click();
   }
 
   const updateRoleRef = async () => {
@@ -362,7 +406,6 @@ const Board = (props) => {
         .then((res) => {
             if(res.data.role_id === 4) { // kicked: 5
                 status.current = false;
-                console.log('sdfsfd');
             }else{
               status.current = true;
             }
@@ -391,7 +434,6 @@ const Board = (props) => {
     
     // retrive data board when access
     const getBoard = (roomId) => {
-      console.log('ngoc')
       apiBoard.get(`/${roomId}`,{ 
         headers: { accessToken: localStorage.getItem("accessToken")},
       })
@@ -561,25 +603,38 @@ const Board = (props) => {
           // draw to spread canvas
           spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
           spreadctx.beginPath();
-          spreadctx.arc(previous.current[0].x, previous.current[0].y, radius, 0, 2 * Math.PI);
+          spreadctx.moveTo(previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
+          spreadctx.bezierCurveTo(previous.current[0].x, previous.current[0].y, previous.current[1].x, previous.current[0].y, previous.current[1].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
+          spreadctx.bezierCurveTo(previous.current[1].x, previous.current[1].y, previous.current[0].x, previous.current[1].y, previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
           spreadctx.strokeStyle = data.color;
           spreadctx.lineWidth = data.size;
           spreadctx.lineCap = "round";
           spreadctx.lineJoin = "round";
-          spreadctx.stroke();
           spreadctx.closePath();
+          spreadctx.stroke();
+
+          // spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
+          // spreadctx.beginPath();
+          // spreadctx.arc(previous.current[0].x, previous.current[0].y, radius, 0, 2 * Math.PI);
+          // spreadctx.strokeStyle = data.color;
+          // spreadctx.lineWidth = data.size;
+          // spreadctx.lineCap = "round";
+          // spreadctx.lineJoin = "round";
+          // spreadctx.stroke();
+          // spreadctx.closePath();
 
           if(!drawing) {
             // draw to main canvas if mouseup
-            spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
             ctx.beginPath();
-            ctx.arc(previous.current[0].x, previous.current[0].y, radius, 0, 2 * Math.PI);
+            ctx.moveTo(previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
+            ctx.bezierCurveTo(previous.current[0].x, previous.current[0].y, previous.current[1].x, previous.current[0].y, previous.current[1].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
+            ctx.bezierCurveTo(previous.current[1].x, previous.current[1].y, previous.current[0].x, previous.current[1].y, previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
             ctx.strokeStyle = data.color;
             ctx.lineWidth = data.size;
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
-            ctx.stroke();
             ctx.closePath();
+            ctx.stroke();
             previous.current = [];
             if (!data.emit) { return; }
             emitCanvas();
@@ -587,29 +642,57 @@ const Board = (props) => {
         }
       },
 
-      'drag': {
+      'text': {
         draw: (data) => {
-          if(dragimg.current !== null){
-            if(previous.current.length === 0) {
-              previous.current.push({x: data.x0, y: data.y0}, {x: data.x0, y: data.y0});
-            }else{
-              const index = previous.current.length - 1;
-              const copyPrevious = [...previous.current];
-              copyPrevious[index] = {x: data.x1, y: data.y1};
-              previous.current = copyPrevious;
-            }
-  
-            const delX = previous.current[1].x - previous.current[0].x;
-            const delY = previous.current[1].y - previous.current[0].y;
-            const img = new Image();
-            img.src = dragimg.current;
-            img.onload = function() {
-              setTimeout(() => {
-                spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
-                spreadctx.drawImage(img, delX + spreadCanvas.width/2 - this.width/2, delY + spreadCanvas.height/2 - this.height/2);
-              }, 200);
-            }
-          }
+          const fakeEle = document.createElement('div');
+          // Hide it completely
+          fakeEle.style.position = 'absolute';
+          fakeEle.style.top = '0';
+          fakeEle.style.left = '-9999px';
+          fakeEle.style.overflow = 'hidden';
+          fakeEle.style.visibility = 'hidden';
+          fakeEle.style.whiteSpace = 'nowrap';
+          fakeEle.style.height = '0';
+          fakeEle.style.padding = '5px';
+
+          // We copy some styles from the textbox that effect the width
+          const textboxEle = document.getElementById('textbox');
+          const textctn = document.querySelector('.text-container');
+          textboxEle.value = '';
+
+          // Get the styles
+          const styles = window.getComputedStyle(textboxEle);
+
+          // Copy font styles from the textbox
+          fakeEle.style.fontFamily = styles.fontFamily;
+          fakeEle.style.fontSize = styles.fontSize;
+          fakeEle.style.fontStyle = styles.fontStyle;
+          fakeEle.style.fontWeight = styles.fontWeight;
+          fakeEle.style.letterSpacing = styles.letterSpacing;
+          fakeEle.style.textTransform = styles.textTransform;
+          
+          fakeEle.style.borderLeftWidth = styles.borderLeftWidth;
+          fakeEle.style.borderRightWidth = styles.borderRightWidth;
+          fakeEle.style.paddingLeft = styles.paddingLeft;
+          fakeEle.style.paddingRight = styles.paddingRight;
+
+          // Append the fake element to `body`
+          document.body.appendChild(fakeEle);
+          const setWidth = function () {
+            const string = textboxEle.value || textboxEle.getAttribute('placeholder') || '';
+            fakeEle.innerHTML = string.replace(/\s/g, '&' + 'nbsp;');
+            const fakeEleStyles = window.getComputedStyle(fakeEle);
+            textboxEle.style.width = parseFloat(fakeEleStyles.width) + 10 + 'px';
+            textctn.style.width = textboxEle.style.width
+            // textctn.style.height = textboxEle.style.fontSize;
+          };
+          setWidth();
+          textctn.style.display = 'block';
+          textctn.style.left= data.x0 - parseFloat(textboxEle.style.width)/2 + 'px';
+          textctn.style.top = data.y0 - 25/2 + 'px';
+          textboxEle.addEventListener('input', function (e) {
+            setWidth();
+          });
         }
       }
     }
@@ -726,7 +809,28 @@ const Board = (props) => {
   // ------------- The Canvas and color elements --------------------------
 
   return (
+    
     <div id="whiteboard-container">
+      <div className='text-container'>
+        <input type='text' id= 'textbox'/>
+        <div className='tool_text'>
+          <span onClick={locktxt}><AiTwotoneLock/></span>   
+          <span onClick={removetxt}><IoMdTrash/></span>   
+        </div>
+      </div>
+      
+      <div className='item'>
+        <div className='resizer ne'></div>
+        <div className='resizer nw'></div>
+        <div className='resizer sw'></div>
+        <div className='resizer se'></div>
+        <div className='tool_drag'>
+          <span id = 'lockimg' onClick={lockimg}><AiTwotoneLock/></span>   
+          <span id = 'removeimg' onClick={removeimg}><IoMdTrash/></span>   
+        </div>
+      </div>
+
+      <div></div> 
       <canvas ref={canvasRef} className="board" />
       <canvas ref= {spreadCanvasRef} className = "spreadboard" />
       <Control onColorUpdate = {onColorUpdate} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate} download={download} refresh={refresh} uploadImage={uploadImage} undoBoard={undoBoard} redoBoard={redoBoard} roomId = {roomId}/>
