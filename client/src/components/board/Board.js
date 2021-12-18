@@ -812,7 +812,7 @@ const Board = (props) => {
     
     <div id="whiteboard-container">
       <div className='text-container'>
-        <input type='text' id= 'textbox'/>
+        <input type='text' id= 'textbox' placeholder= 'Enter text'/>
         <div className='tool_text'>
           <span onClick={locktxt}><AiTwotoneLock/></span>   
           <span onClick={removetxt}><IoMdTrash/></span>   

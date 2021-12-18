@@ -359,10 +359,10 @@
 .share-button::after{
     content: "Copied";
     position: absolute;
-    bottom: -2.5rem;
+    bottom: -3.2rem;
 
     color: white;
-    padding: 4px 6px;
+    padding: 1px 4px;
     border-radius: 5px;
     font-size: 0.9rem;
     right:0;
