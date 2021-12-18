@@ -1,5 +1,6 @@
 const {Boards} = require('../models');
 const shortid = require('shortid');
+const crypto = require("crypto");
 module.exports.getAll = function(req, res) {
     Boards.findAll({
         where: {
@@ -29,7 +30,7 @@ module.exports.create = async function(req, res) {
     });
 
     while(exist_board) {
-        room = shortid.generate();
+        room = crypto.randomBytes(30).toString("hex");
         exist_board = await Boards.findOne({
             where: {
                 room: room,

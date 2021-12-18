@@ -141,13 +141,13 @@ const Board = (props) => {
     const textctn = document.querySelector('.text-container');
     // textctn.style.display = 'none';
     const ctx = canvasRef.current.getContext('2d');
-    ctx.font = "15px Comic Sans MS";
+    ctx.font = "15px Comic";
     // ctx.fontSize = '20';
     ctx.fontFamily = textboxEle.style.fontFamily;
     ctx.fillStyle = color.current;
     // ctx.textAlign = "center";
     let rect = textboxEle.getBoundingClientRect();
-    ctx.fillText(textboxEle.value, parseFloat(rect.left), parseFloat(rect.top) + parseFloat(rect.height)/2);
+    ctx.fillText(textboxEle.value, parseFloat(rect.left) + 2, parseFloat(rect.top) + parseFloat(rect.height)/2 + 2);
     textctn.style.display = 'none';
     emitCanvas();
     console.log('sdfsdfsdf');

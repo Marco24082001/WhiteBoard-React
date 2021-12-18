@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import {FaTrashAlt,FaEdit} from 'react-icons/fa';
 import Navbar from '../../components/Navbar/Navbar';
 import generate from 'shortid';
+import crypto from 'crypto';
 import './style.css';
 
 const apiBoard = axios.create({
@@ -47,7 +48,7 @@ function Home() {
   const createBoard = () =>{
     // create board
     let boardId = null;
-    let room = generate();
+    let room = crypto.randomBytes(30).toString("hex");
     const newBoard = {title:'Untitled', room: room, postText:'...'};
     apiBoard
       .post('create', newBoard, {  headers: {

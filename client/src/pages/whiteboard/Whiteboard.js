@@ -19,9 +19,12 @@ function Whiteboard() {
   }, []);
 
   return (
-    <div class="board-container">
+    <>
+      <div class="board-container">
         <Board roomId = {room.id}></Board>
-    </div>
+      </div>
+    </>
+    
   );
 }
 

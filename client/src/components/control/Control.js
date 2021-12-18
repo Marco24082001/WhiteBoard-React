@@ -423,9 +423,9 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                     <ul>
                     <li><a href=''onClick={returnHome}>Home</a></li>
                     <li>
-                        <a>File</a>
+                        <a>Tool</a>
                         <ul>
-                        <li><a>New</a></li>
+                        {/* <li><a>New</a></li> */}
                         <li>
                             <a>Export</a>
                             <ul>
