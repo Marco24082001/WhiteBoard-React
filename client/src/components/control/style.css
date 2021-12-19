@@ -561,3 +561,62 @@
     font-size: 0.8rem;
 }
 
+.ctl-listboard {
+    position: absolute;
+    /* width: 30px; */
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    left: 0;
+    bottom: 0;
+    z-index: 8;
+    /* width: 100px; */
+    /* height: 100px; */
+    background-color:rgb(51, 42, 42);
+    align-items: center;
+    gap: 5px;
+    overflow-y: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.ctl-listboard::-webkit-scrollbar {
+    display: none;
+}
+.ctl-listboard
+.btn-ctl {
+    width: 30px;
+    height: 30px;
+    background-color: white;
+    text-align: center;
+    font-size: 25px;
+    line-height: 25px;
+    cursor: pointer;
+}
+
+.btn-ctl.switch-board {
+    font-size: 20px !important;
+    line-height: 30px;
+}
+
+.btn-ctl.switch-board.selected {
+    background-color :rgb(161, 156, 156)
+}
+
+.btn-ctl.deleteboard {
+    font-size: 22px;
+    line-height: 27px;
+}
+.btn-ctl.deleteboard span svg {
+    fill: rgb(255, 7, 7);
+    vertical-align:middle;
+}
+.btn-ctl span svg {
+    fill:rgb(56, 1, 255);
+    vertical-align:middle;
+}
+
+.btn-ctl:hover {
+    background-color: rgb(161, 156, 156);
+}
+

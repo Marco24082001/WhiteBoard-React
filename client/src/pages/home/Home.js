@@ -10,9 +10,8 @@ import Navbar from '../../components/Navbar/Navbar';
 import generate from 'shortid';
 import crypto from 'crypto';
 import './style.css';
-
-const apiBoard = axios.create({
-  baseURL: `${process.env.REACT_APP_API}/boards/`,
+const apiRoom = axios.create({
+  baseURL: `${process.env.REACT_APP_API}/rooms/`,
 })
 
 const apiParticipations = axios.create({
@@ -20,10 +19,10 @@ const apiParticipations = axios.create({
 })
 
 function Home() {
-  const [listOfBoards, setListOfBoards] = useState([]);
+  const [listOfRooms, setListOfRooms] = useState([]);
   // const { authState } = useContext(AuthContext);
   const [title, setTitle] = useState('');
-  const [boardId, setBoardId] = useState('');
+  const [roomId, setRoomId] = useState('');
   let history = useHistory();
   
   // Const 
@@ -32,8 +31,8 @@ function Home() {
   }
 
   // add role admin
-  const addRoleAdmin = (boardId, role_id)=> {
-    let owner = {boardId: boardId, role_id: role_id}
+  const addRoleAdmin = (roomId, role_id)=> {
+    let owner = {roomId: roomId, role_id: role_id}
     apiParticipations
       .post('create', owner, {  headers: {
         accessToken: localStorage.getItem('accessToken')
@@ -45,13 +44,12 @@ function Home() {
       });
   }
 
-  const createBoard = () =>{
+  const createRoom = () =>{
     // create board
-    let boardId = null;
-    let room = crypto.randomBytes(30).toString("hex");
-    const newBoard = {title:'Untitled', room: room, postText:'...'};
-    apiBoard
-      .post('create', newBoard, {  headers: {
+    let roomId = crypto.randomBytes(30).toString("hex");
+    const newRoom = {title:'Untitled', roomId: roomId};
+    apiRoom
+      .post('create', newRoom, {  headers: {
         accessToken: localStorage.getItem('accessToken')
     }})
       .then((res) => {
@@ -59,19 +57,17 @@ function Home() {
           alert(res.data.error);
         }else{
           // add admin
-          boardId = res.data.id;
-          if(boardId !== null) {
-            addRoleAdmin(boardId, 1);
+          let id  = res.data.id;
+          if(id !== null) {
+            addRoleAdmin(id, 1);
+            history.push(`room/${res.data.roomId}`);
           }
-          history.push(`board/${res.data.room}`);
         }
       })
-    
-    
   }
   
-  const deleteBoard = (boardId) => {
-    apiBoard.delete(`delete/${boardId}`, {  headers: {
+  const deleteRoom = (roomId) => {
+    apiRoom.delete(`delete/${roomId}`, {  headers: {
       accessToken: localStorage.getItem('accessToken')
   }}).then((res) => {
       if(res.data.error){
@@ -83,10 +79,10 @@ function Home() {
     })
   }
 
-  const enableTitle = (boardId) => {
+  const enableTitle = (roomId) => {
     let boxtitle = document.getElementById('id01');
     boxtitle.style.display = 'block';
-    setBoardId(boardId);
+    setRoomId(roomId);
   }
 
   const unableTitle = (e) => {
@@ -95,8 +91,8 @@ function Home() {
   }
 
   const editTitle = () => {
-    const data = {boardId: boardId, title: title};
-    apiBoard
+    const data = {roomId: roomId, title: title};
+    apiRoom
       .put('updatetitle', data, { headers: {
         accessToken: localStorage.getItem('accessToken')
     }})
@@ -120,11 +116,11 @@ function Home() {
     if(!localStorage.getItem('accessToken')){
       history.push('/login')
     }else{
-      apiBoard.get('all', {  headers: {
+      apiRoom.get('all', {  headers: {
         accessToken: localStorage.getItem('accessToken')
     }}).then((res) => {
         if(!res.data.error) {
-          setListOfBoards(res.data);
+          setListOfRooms(res.data);
         }
         else {
           console.log(res.data.error);
@@ -144,7 +140,7 @@ function Home() {
           <button id='editbtn_save' class='editbtn' onClick={editTitle}>Save</button>
           <button id='editbtn_cancel' class='editbtn' onClick={unableTitle}>Cancel</button>
         </div>
-        <div className='box createButton' onClick={createBoard}>
+        <div className='box createButton' onClick={createRoom}>
           <div className='newBoardButtonPlusOutside shadowDefault' aria-hidden='true'>
             <div className='newBoardButtonPlusInside'>
               <svg className='addIcon' xmlns='http://www.w3.org/2000/svg' focusable='false'>
@@ -154,27 +150,27 @@ function Home() {
           </div>
           <div class='fontBody newBoardButtonCaption' aria-hidden='true'>Create new Whiteboard</div>
         </div>
-        {listOfBoards.map((value, key) => {
+        {listOfRooms.map((value, key) => {
           return (
             <div
               key={key}
               className='box boards'
               onClick={(e) => {
-                if(e.srcElement == this)  history.push(`/board/${value.room}`);
+                if(e.srcElement == this)  history.push(`/room/${value.roomId}`);
               }}
               style={{backgroundImage: `url(${value.dataUrl})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundSize: '300px 300px'}}
             > 
               <div className='footer' onClick= {(e) => {
                 e.stopPropagation();
-                enableTitle(value.id);
+                enableTitle(value.roomId);
               }}>
-                <div className='editCaption' onClick={(e) => {enableTitle(value.id);}}><FaEdit style={{'width' : '30px', 'verticalAlign' : 'center'}}/>{
+                <div className='editCaption' onClick={(e) => {enableTitle(value.roomId);}}><FaEdit style={{'width' : '30px', 'verticalAlign' : 'center'}}/>{
                   <span>{value.title}</span>
                 }</div>
                 <div className='dropdowns'>
                   <span className='dropdownbtn' onClick={(e) => {
                     e.stopPropagation();
-                    deleteBoard(value.id);
+                    deleteRoom(value.roomId);
                   }}><FaTrashAlt/></span>
                 </div>
               </div>

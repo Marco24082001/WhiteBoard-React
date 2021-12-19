@@ -1,39 +1,38 @@
 const {Room_participant} = require('../models');
-
+const {Rooms} = require('../models');
 // 1: owner, 2: admin, 3: guest, 4: kicked
 
-module.exports.create = function(req, res) {
-    let {boardId, role_id} = req.body;
-    // let exist_participant = await Boards.findOne({
-    //     where: {
-    //         boardId: boardId,
-    //         userId: req.user.id,
-    //     }
-    // });
+module.exports.create = async function(req, res) {
+    let {roomId, role_id} = req.body;
 
     Room_participant.create({
-        boardId: boardId,
+        roomId: roomId,
         userId: req.user.id,
         role_id: role_id
     }).then(() => { 
         res.json("Successfully!")
+        console.log('thanh cong')
     }).catch((err) => res.json({error: err}));
 };
 
 module.exports.isParticipant = async function(req, res) {
     const userId = req.user.id;
-    console.log(req.params.boardId);
-    const boardId = req.params.boardId;
+    const roomId = req.params.roomId;
+    const room = await Rooms.findOne({
+        where: {
+            roomId: roomId,
+        }
+    });
     const participant = await Room_participant.findOne({
         where: {
             userId: userId,
-            boardId: boardId,
+            roomId: room.id,
         }
     });
 
     if(!participant) {
         Room_participant.create({
-            boardId: boardId,
+            roomId: room.id,
             userId: userId,
             role_id: 3,
         }).then((rs) => {
@@ -46,8 +45,14 @@ module.exports.isParticipant = async function(req, res) {
 };
 
 module.exports.updateRole = async function(req, res) {
-    const {userId, boardId, role_id} = req.body;
-    console.log('vao dc day roi')
+    const {userId, roomId, role_id} = req.body;
+    console.log('updateRolexxxxxxxxxxxxxxxxxxx')
+    console.log(userId);
+    const room = await Rooms.findOne({
+        where: {
+            roomId: roomId,
+        }
+    });
     Room_participant.update(
         {
             role_id : role_id
@@ -55,7 +60,7 @@ module.exports.updateRole = async function(req, res) {
         {
             where: {
                 userId: userId,
-                boardId: boardId
+                roomId: room.id,
             }
         }
     ).then((rs) => res.json("Successfully!"))

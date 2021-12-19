@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useContext } from 'react';
+import React, { useRef, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 // import {useHistory } from "react-router-dom";
 import { AuthContext } from "../../helpers/AuthContext";
@@ -10,9 +10,13 @@ import {AiTwotoneLock} from 'react-icons/ai';
 
 import './style.css';
 
+const apiRoom = axios.create({
+  baseURL: `${process.env.REACT_APP_API}/rooms/`
+});
+
 const apiBoard = axios.create({
   baseURL: `${process.env.REACT_APP_API}/boards/`
-})
+});
 
 const apiParticipations = axios.create({
   baseURL: `${process.env.REACT_APP_API}/participations/`,
@@ -24,7 +28,9 @@ const apiParticipations = axios.create({
 // })
 
 const Board = (props) => {
-  const roomId = props.roomId;
+  // const roomId = props.roomId;
+  const room = useRef(props.roomId);
+  const [listOfBoards, setListOfBoards] = useState([]);
   const {authState} = useContext(AuthContext);
   const canvasRef = useRef(null);
   const spreadCanvasRef = useRef(null);
@@ -39,18 +45,21 @@ const Board = (props) => {
   const boardId = useRef(null);
   const index = useRef(-1);
   const isdrag = useRef(false);
+  const [boardid, setBoardid] = useState(null);
   
   const diffToast = (msg) => {
     toast(msg);
     toast.clearWaitingQueue();
   }
+  
   // emit data
   const emitCanvas = () => {
     if(timeout.current !== undefined) clearTimeout(timeout.current)
         timeout.current = setTimeout(() => {
           let base64ImageData = canvasRef.current.toDataURL("image/png");
+          let roomId = room.current;
           previousBoard.current.push(base64ImageData)
-          authState.socket.emit("canvas-data", {roomId,base64ImageData});
+          authState.socket.emit("canvas-data", {roomId, boardid,base64ImageData});
           updateBoard(base64ImageData);
         }, 200);
   }
@@ -150,7 +159,6 @@ const Board = (props) => {
     ctx.fillText(textboxEle.value, parseFloat(rect.left) + 2, parseFloat(rect.top) + parseFloat(rect.height)/2 + 2);
     textctn.style.display = 'none';
     emitCanvas();
-    console.log('sdfsdfsdf');
   }
 
   const removeimg = () => {
@@ -197,19 +205,6 @@ const Board = (props) => {
       ctx.lineTo(canvasRef.current.width - 10, i);
       ctx.stroke();
     }
-
-
-    // ctx.beginPath();
-    // for(let i = 0; i <= canvasRef.current.width - 10; i = i + 50){
-    //   ctx.moveTo(i, 0);
-    //   ctx.lineTo(i, canvasRef.current.width - 10);
-
-    //   ctx.moveTo(0, i);
-    //   ctx.lineTo(canvasRef.current.width - 10, i);
-    //   ctx.strokeStyle = '#f0f0f0';
-    //   ctx.stroke();
-    // }
-
     ctx.strokeStyle = 'black';
     ctx.closePath();
   }
@@ -227,7 +222,8 @@ const Board = (props) => {
   
   // store data board to db
   const updateBoard = (blob) => {
-    const data = {room: roomId, dataUrl: blob}
+    // const roomId = room.current;
+    const data = {boardId: boardid, dataUrl: blob}
     apiBoard.put("updateboard/", data, {
       headers: { accessToken: localStorage.getItem("accessToken")},
     })
@@ -240,8 +236,9 @@ const Board = (props) => {
 
   // refresh canvas
   const refresh = () => {
+    let roomId = room.current;
     drawGrid();
-    authState.socket.emit("refresh", {roomId});
+    authState.socket.emit("refresh", {roomId, boardid});
   }
 
   const drawImg = (data) => {
@@ -317,7 +314,6 @@ const Board = (props) => {
       let prevY = e.clientY;
 
       function mousemove(e) {
-        // console.log(e.clientX);
         if(!isResizing){
           let newX = prevX - e.clientX;
           let newY = prevY - e.clientY;
@@ -400,7 +396,7 @@ const Board = (props) => {
   }
 
   const updateRoleRef = async () => {
-    apiParticipations.get(`/isParticipant/${boardId.current}`, {
+    apiParticipations.get(`/isParticipant/${room.current}`, {
         headers: {accessToken: localStorage.getItem('accessToken')},
         })
         .then((res) => {
@@ -410,10 +406,67 @@ const Board = (props) => {
               status.current = true;
             }
         })
-}
+  }
+
+  const createBoard = () => {
+    const newBoard = {roomId: room.current};
+    apiBoard
+    .post('create', newBoard, {  headers: {
+      accessToken: localStorage.getItem('accessToken')
+    }})
+    .then((res) => {
+      if(res.data.error){
+        alert(res.data.error);
+      }else{
+        boardId.current = res.data.id;
+        setBoardid(res.data.id);
+        resetListOfBoards();
+      }
+    })
+  }
+
+  const deleteBoard = (id) => {
+    if(listOfBoards.length > 1) {
+      apiBoard.delete(`delete/${id}`, { headers: {
+        accessToken: localStorage.getItem('accessToken')
+      }})
+      .then((res) => {
+        if(res.data.error) {
+          alert(res.data.error);
+        }else {
+          // boardId.current
+          const index = listOfBoards.findIndex(board => board.id === id);
+          const idx = index?(index - 1):(index + 1);
+          setBoardid(listOfBoards[idx].id);
+          resetListOfBoards();
+        }
+      })
+    }
+  }
+
+  const switchBoard = (id) => {
+    boardId.current = id;
+    setBoardid(id);
+  }
+
+  const resetListOfBoards = () => {
+    apiBoard.get(`all/${room.current}`, {  headers: {
+      accessToken: localStorage.getItem('accessToken')
+    }}).then((res) => {
+      if(!res.data.error) {
+        if(res.data.length !== 0){
+          setListOfBoards(res.data);
+        }
+      }
+      else {
+        console.log(res.data.error);
+      }
+    })
+  }
 
   useEffect(() => {
-    apiBoard.get(`/${roomId}`,{ 
+    const roomId =room.current;
+    apiRoom.get(`/${roomId}`,{ 
       headers: { accessToken: localStorage.getItem('accessToken')},
     })
     .then((res) => {
@@ -431,380 +484,431 @@ const Board = (props) => {
           })
       }
     })
-    
-    // retrive data board when access
-    const getBoard = (roomId) => {
-      apiBoard.get(`/${roomId}`,{ 
-        headers: { accessToken: localStorage.getItem("accessToken")},
-      })
-      .then((res) => {
-        if(res.data.dataUrl !== null){
-          onDrawingEvent(res.data.dataUrl);
-          title.current = res.data.title;
+
+    apiBoard.get(`all/${room.current}`, {  headers: {
+      accessToken: localStorage.getItem('accessToken')
+    }}).then((res) => {
+      if(!res.data.error) {
+        if(res.data.length !== 0){
+          setListOfBoards(res.data);
+          boardId.current = res.data[0].id;
+          setBoardid(res.data[0].id);
         }
         else {
-          drawGrid();
-          let base64ImageData = canvasRef.current.toDataURL("image/png");
-          previousBoard.current.push(base64ImageData)
+          createBoard();
         }
-      })
-    }
-    getBoard(roomId);
-  
-    const canvas = canvasRef.current;
-    const spreadCanvas = spreadCanvasRef.current;
-    const spreadctx = spreadCanvas.getContext('2d');
-    const ctx = canvas.getContext('2d');
+      }
+      else {
+        console.log(res.data.error);
+      }
+    })
+  }, [])
 
-    // store clientx y
-    const current = {};
+  useEffect(() => {
+    // retrive data board when access
+    // if(boardid !== null) {
 
-    let drawing = false;
-    // ------------------------------- create the drawing ----------------------------
-
-    const tools = {
-
-      'pencil': {
-        draw: (data) => {
-          ctx.beginPath();
-          ctx.moveTo(data.x0, data.y0);
-          ctx.lineTo(data.x1, data.y1);
-          ctx.strokeStyle = data.color;
-          ctx.lineWidth = data.size;
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
-          ctx.stroke();
-          ctx.closePath();
-          if (!data.emit) { return; }
-          emitCanvas();
-        } 
-      },
-
-      'eraser': {
-        draw: (data) => {
-          ctx.beginPath();
-          ctx.moveTo(data.x0, data.y0);
-          ctx.lineTo(data.x1, data.y1);
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = data.size;
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
-          ctx.stroke();
-          ctx.closePath();
-
-          if (!data.emit) { return; }
-          emitCanvas();
-        } 
-      },
-
-      'line': {
-        draw: (data) => {
-          if(previous.current.length === 0) {
-            previous.current.push({x: data.x0, y: data.y0}, {x: data.x0, y: data.y0});
-          }else{
-            const index = previous.current.length - 1;
-            const copyPrevious = [...previous.current];
-            copyPrevious[index] = {x: data.x1, y: data.y1};
-            previous.current = copyPrevious;
-          }
-          spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
-          spreadctx.beginPath();
-          spreadctx.moveTo(previous.current[0].x, previous.current[0].y);
-          spreadctx.lineTo(previous.current[1].x, previous.current[1].y);
-          spreadctx.strokeStyle = data.color;
-          spreadctx.lineWidth = data.size;
-          spreadctx.lineCap = "round";
-          spreadctx.lineJoin = "round";
-          spreadctx.stroke();
-          spreadctx.closePath();
-
-          if(!drawing) {
-            spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
-            ctx.beginPath();
-            ctx.moveTo(previous.current[0].x, previous.current[0].y);
-            ctx.lineTo(previous.current[1].x, previous.current[1].y);
-            ctx.strokeStyle = data.color;
-            ctx.lineWidth = data.size;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-            ctx.stroke();
-            ctx.closePath();
-            previous.current = [];
-          }
-          if (!data.emit) { return; }
-          emitCanvas();
+    // }
+    if(boardid !== null){
+        const getBoard = (boardId) => {
+          apiBoard.get(`/${boardId}`,{ 
+            headers: { accessToken: localStorage.getItem("accessToken")},
+          })
+          .then((res) => {
+            if(res.data !== null) {
+              if(res.data.dataUrl !== null){
+                onDrawingEvent(res.data.dataUrl);
+                title.current = res.data.title;
+              }
+              else {
+                drawGrid();
+                let base64ImageData = canvasRef.current.toDataURL("image/png");
+                previousBoard.current.push(base64ImageData)
+              }
+            }
+          })
         }
-      },
-
-      'rectangle': {
-        draw: (data) => {
-          if(previous.current.length === 0) {
-            previous.current.push({x: data.x0, y: data.y0}, {x: data.x0, y: data.y0});
-          }else{
-            const index = previous.current.length - 1;
-            const copyPrevious = [...previous.current];
-            copyPrevious[index] = {x: data.x1, y: data.y1};
-            previous.current = copyPrevious;
+        getBoard(boardid);
+      
+        const canvas = canvasRef.current;
+        const spreadCanvas = spreadCanvasRef.current;
+        const spreadctx = spreadCanvas.getContext('2d');
+        const ctx = canvas.getContext('2d');
+    
+        // store clientx y
+        const current = {};
+    
+        let drawing = false;
+        // ------------------------------- create the drawing ----------------------------
+    
+        const tools = {
+    
+          'pencil': {
+            draw: (data) => {
+              ctx.beginPath();
+              ctx.moveTo(data.x0, data.y0);
+              ctx.lineTo(data.x1, data.y1);
+              ctx.strokeStyle = data.color;
+              ctx.lineWidth = data.size;
+              ctx.lineCap = "round";
+              ctx.lineJoin = "round";
+              ctx.stroke();
+              ctx.closePath();
+              if (!data.emit) { return; }
+              emitCanvas();
+            } 
+          },
+    
+          'eraser': {
+            draw: (data) => {
+              ctx.beginPath();
+              ctx.moveTo(data.x0, data.y0);
+              ctx.lineTo(data.x1, data.y1);
+              ctx.strokeStyle = '#ffffff';
+              ctx.lineWidth = data.size;
+              ctx.lineCap = "round";
+              ctx.lineJoin = "round";
+              ctx.stroke();
+              ctx.closePath();
+    
+              if (!data.emit) { return; }
+              emitCanvas();
+            } 
+          },
+    
+          'line': {
+            draw: (data) => {
+              if(previous.current.length === 0) {
+                previous.current.push({x: data.x0, y: data.y0}, {x: data.x0, y: data.y0});
+              }else{
+                const index = previous.current.length - 1;
+                const copyPrevious = [...previous.current];
+                copyPrevious[index] = {x: data.x1, y: data.y1};
+                previous.current = copyPrevious;
+              }
+              spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
+              spreadctx.beginPath();
+              spreadctx.moveTo(previous.current[0].x, previous.current[0].y);
+              spreadctx.lineTo(previous.current[1].x, previous.current[1].y);
+              spreadctx.strokeStyle = data.color;
+              spreadctx.lineWidth = data.size;
+              spreadctx.lineCap = "round";
+              spreadctx.lineJoin = "round";
+              spreadctx.stroke();
+              spreadctx.closePath();
+    
+              if(!drawing) {
+                spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
+                ctx.beginPath();
+                ctx.moveTo(previous.current[0].x, previous.current[0].y);
+                ctx.lineTo(previous.current[1].x, previous.current[1].y);
+                ctx.strokeStyle = data.color;
+                ctx.lineWidth = data.size;
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
+                ctx.stroke();
+                ctx.closePath();
+                previous.current = [];
+              }
+              if (!data.emit) { return; }
+              emitCanvas();
+            }
+          },
+    
+          'rectangle': {
+            draw: (data) => {
+              if(previous.current.length === 0) {
+                previous.current.push({x: data.x0, y: data.y0}, {x: data.x0, y: data.y0});
+              }else{
+                const index = previous.current.length - 1;
+                const copyPrevious = [...previous.current];
+                copyPrevious[index] = {x: data.x1, y: data.y1};
+                previous.current = copyPrevious;
+              }
+              // handle data x y width height
+              let width = Math.abs(previous.current[0].x - previous.current[1].x);
+              let height = Math.abs(previous.current[0].y - previous.current[1].y);
+              let x, y;
+              if(previous.current[0].x < previous.current[1].x) {
+                if(previous.current[0].y < previous.current[1].y ) { x = previous.current[0].x; y = previous.current[0].y }
+                else { x = previous.current[0].x; y = previous.current[0].y - height}
+              }
+              else {
+                if(previous.current[0].y < previous.current[1].y) { x = previous.current[0].x - width; y = previous.current[0].y }
+                else { x = previous.current[0].x - width; y = previous.current[0].y - height }
+              };
+              // draw to spread canvas
+              spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
+              spreadctx.beginPath();
+              spreadctx.rect(x, y, width, height);
+              spreadctx.strokeStyle = data.color;
+              spreadctx.lineWidth = data.size;
+              spreadctx.lineCap = "round";
+              spreadctx.lineJoin = "round";
+              spreadctx.stroke();
+              spreadctx.closePath();
+              
+              if(!drawing) {
+                // draw main canvas if mouseup
+                spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
+                ctx.beginPath();
+                ctx.rect(x, y, width, height);
+                ctx.strokeStyle = data.color;
+                ctx.lineWidth = data.size;
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
+                ctx.stroke();
+                ctx.closePath();
+                previous.current = [];
+                if (!data.emit) { return; }
+                emitCanvas();
+              }
+            },
+          },
+    
+          'circle': {
+            draw: (data) => {
+              if(previous.current.length === 0) {
+                previous.current.push({x: data.x0, y: data.y0}, {x: data.x0, y: data.y0});
+              }else{
+                const index = previous.current.length - 1;
+                const copyPrevious = [...previous.current];
+                copyPrevious[index] = {x: data.x1, y: data.y1};
+                previous.current = copyPrevious;
+              }
+              // handle data x y width height
+              const radius = Math.abs(previous.current[0].x - previous.current[1].x);
+    
+              // draw to spread canvas
+              spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
+              spreadctx.beginPath();
+              spreadctx.moveTo(previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
+              spreadctx.bezierCurveTo(previous.current[0].x, previous.current[0].y, previous.current[1].x, previous.current[0].y, previous.current[1].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
+              spreadctx.bezierCurveTo(previous.current[1].x, previous.current[1].y, previous.current[0].x, previous.current[1].y, previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
+              spreadctx.strokeStyle = data.color;
+              spreadctx.lineWidth = data.size;
+              spreadctx.lineCap = "round";
+              spreadctx.lineJoin = "round";
+              spreadctx.closePath();
+              spreadctx.stroke();
+    
+              // spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
+              // spreadctx.beginPath();
+              // spreadctx.arc(previous.current[0].x, previous.current[0].y, radius, 0, 2 * Math.PI);
+              // spreadctx.strokeStyle = data.color;
+              // spreadctx.lineWidth = data.size;
+              // spreadctx.lineCap = "round";
+              // spreadctx.lineJoin = "round";
+              // spreadctx.stroke();
+              // spreadctx.closePath();
+    
+              if(!drawing) {
+                // draw to main canvas if mouseup
+                ctx.beginPath();
+                ctx.moveTo(previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
+                ctx.bezierCurveTo(previous.current[0].x, previous.current[0].y, previous.current[1].x, previous.current[0].y, previous.current[1].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
+                ctx.bezierCurveTo(previous.current[1].x, previous.current[1].y, previous.current[0].x, previous.current[1].y, previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
+                ctx.strokeStyle = data.color;
+                ctx.lineWidth = data.size;
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
+                ctx.closePath();
+                ctx.stroke();
+                spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
+                previous.current = [];
+                if (!data.emit) { return; }
+                emitCanvas();
+              }
+            }
+          },
+    
+          'text': {
+            draw: (data) => {
+              const fakeEle = document.createElement('div');
+              // Hide it completely
+              fakeEle.style.position = 'absolute';
+              fakeEle.style.top = '0';
+              fakeEle.style.left = '-9999px';
+              fakeEle.style.overflow = 'hidden';
+              fakeEle.style.visibility = 'hidden';
+              fakeEle.style.whiteSpace = 'nowrap';
+              fakeEle.style.height = '0';
+              fakeEle.style.padding = '5px';
+    
+              // We copy some styles from the textbox that effect the width
+              const textboxEle = document.getElementById('textbox');
+              const textctn = document.querySelector('.text-container');
+              textboxEle.value = '';
+    
+              // Get the styles
+              const styles = window.getComputedStyle(textboxEle);
+    
+              // Copy font styles from the textbox
+              fakeEle.style.fontFamily = styles.fontFamily;
+              fakeEle.style.fontSize = styles.fontSize;
+              fakeEle.style.fontStyle = styles.fontStyle;
+              fakeEle.style.fontWeight = styles.fontWeight;
+              fakeEle.style.letterSpacing = styles.letterSpacing;
+              fakeEle.style.textTransform = styles.textTransform;
+              
+              fakeEle.style.borderLeftWidth = styles.borderLeftWidth;
+              fakeEle.style.borderRightWidth = styles.borderRightWidth;
+              fakeEle.style.paddingLeft = styles.paddingLeft;
+              fakeEle.style.paddingRight = styles.paddingRight;
+    
+              // Append the fake element to `body`
+              document.body.appendChild(fakeEle);
+              const setWidth = function () {
+                const string = textboxEle.value || textboxEle.getAttribute('placeholder') || '';
+                fakeEle.innerHTML = string.replace(/\s/g, '&' + 'nbsp;');
+                const fakeEleStyles = window.getComputedStyle(fakeEle);
+                textboxEle.style.width = parseFloat(fakeEleStyles.width) + 10 + 'px';
+                textctn.style.width = textboxEle.style.width
+                // textctn.style.height = textboxEle.style.fontSize;
+              };
+              setWidth();
+              textctn.style.display = 'block';
+              textctn.style.left= data.x0 - parseFloat(textboxEle.style.width)/2 + 'px';
+              textctn.style.top = data.y0 - 25/2 + 'px';
+              textboxEle.addEventListener('input', function (e) {
+                setWidth();
+              });
+            }
           }
-          // handle data x y width height
-          let width = Math.abs(previous.current[0].x - previous.current[1].x);
-          let height = Math.abs(previous.current[0].y - previous.current[1].y);
-          let x, y;
-          if(previous.current[0].x < previous.current[1].x) {
-            if(previous.current[0].y < previous.current[1].y ) { x = previous.current[0].x; y = previous.current[0].y }
-            else { x = previous.current[0].x; y = previous.current[0].y - height}
+        }
+    
+        // ---------------- mouse movement --------------------------------------
+    
+        const onMouseDown = (e) => {
+          drawing = true;
+          current.x = e.clientX || e.touches.clientX;
+          current.y = e.clientY || e.touches.clientY;
+        };
+    
+        const onMouseMove = (e) => {
+          if (!drawing) { return; }
+          let data = {
+            x0: current.x,
+            y0: current.y,
+            x1: e.clientX || e.touches.clientX,
+            y1: e.clientY || e.touches.clientY,
+            color: color.current,
+            size: size.current,
+            emit: true,
           }
-          else {
-            if(previous.current[0].y < previous.current[1].y) { x = previous.current[0].x - width; y = previous.current[0].y }
-            else { x = previous.current[0].x - width; y = previous.current[0].y - height }
+          if(status.current) {
+            tools[tool.current].draw(data);
+          }else {
+            diffToast('Only see !')
+          }
+          // drawLine(current.x, current.y, e.clientX || e.touches.clientX, e.clientY || e.touches.clientY, color.current, size.current, true);
+          current.x = e.clientX || e.touches.clientX;
+          current.y = e.clientY || e.touches.clientY;
+        };
+    
+        const onMouseUp = (e) => {
+          if (!drawing) { return; }
+          drawing = false;
+          let data = {
+            x0: current.x,
+            y0: current.y,
+            x1: e.clientX || e.touches.clientX,
+            y1: e.clientY || e.touches.clientY,
+            color: color.current,
+            size: size.current,
+            emit: true,
+          }
+          if(status.current) {
+            tools[tool.current].draw(data);
+          }else {
+            diffToast('Only see !')
+          }
+        };
+    
+        // ----------- limit the number of events per second -----------------------
+    
+        const throttle = (callback, delay) => {
+          let previousCall = new Date().getTime();
+          return function() {
+            const time = new Date().getTime();
+    
+            if ((time - previousCall) >= delay) {
+              previousCall = time;
+              callback.apply(null, arguments);
+            }
           };
-          // draw to spread canvas
-          spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
-          spreadctx.beginPath();
-          spreadctx.rect(x, y, width, height);
-          spreadctx.strokeStyle = data.color;
-          spreadctx.lineWidth = data.size;
-          spreadctx.lineCap = "round";
-          spreadctx.lineJoin = "round";
-          spreadctx.stroke();
-          spreadctx.closePath();
-          
-          if(!drawing) {
-            // draw main canvas if mouseup
-            spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
-            ctx.beginPath();
-            ctx.rect(x, y, width, height);
-            ctx.strokeStyle = data.color;
-            ctx.lineWidth = data.size;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-            ctx.stroke();
-            ctx.closePath();
-            previous.current = [];
-            if (!data.emit) { return; }
-            emitCanvas();
-          }
-        },
-      },
-
-      'circle': {
-        draw: (data) => {
-          if(previous.current.length === 0) {
-            previous.current.push({x: data.x0, y: data.y0}, {x: data.x0, y: data.y0});
-          }else{
-            const index = previous.current.length - 1;
-            const copyPrevious = [...previous.current];
-            copyPrevious[index] = {x: data.x1, y: data.y1};
-            previous.current = copyPrevious;
-          }
-          // handle data x y width height
-          const radius = Math.abs(previous.current[0].x - previous.current[1].x);
-
-          // draw to spread canvas
-          spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
-          spreadctx.beginPath();
-          spreadctx.moveTo(previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
-          spreadctx.bezierCurveTo(previous.current[0].x, previous.current[0].y, previous.current[1].x, previous.current[0].y, previous.current[1].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
-          spreadctx.bezierCurveTo(previous.current[1].x, previous.current[1].y, previous.current[0].x, previous.current[1].y, previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
-          spreadctx.strokeStyle = data.color;
-          spreadctx.lineWidth = data.size;
-          spreadctx.lineCap = "round";
-          spreadctx.lineJoin = "round";
-          spreadctx.closePath();
-          spreadctx.stroke();
-
-          // spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
-          // spreadctx.beginPath();
-          // spreadctx.arc(previous.current[0].x, previous.current[0].y, radius, 0, 2 * Math.PI);
-          // spreadctx.strokeStyle = data.color;
-          // spreadctx.lineWidth = data.size;
-          // spreadctx.lineCap = "round";
-          // spreadctx.lineJoin = "round";
-          // spreadctx.stroke();
-          // spreadctx.closePath();
-
-          if(!drawing) {
-            // draw to main canvas if mouseup
-            ctx.beginPath();
-            ctx.moveTo(previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
-            ctx.bezierCurveTo(previous.current[0].x, previous.current[0].y, previous.current[1].x, previous.current[0].y, previous.current[1].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
-            ctx.bezierCurveTo(previous.current[1].x, previous.current[1].y, previous.current[0].x, previous.current[1].y, previous.current[0].x, previous.current[0].y + (previous.current[1].y - previous.current[0].y) / 2);
-            ctx.strokeStyle = data.color;
-            ctx.lineWidth = data.size;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-            ctx.closePath();
-            ctx.stroke();
-            previous.current = [];
-            if (!data.emit) { return; }
-            emitCanvas();
-          }
-        }
-      },
-
-      'text': {
-        draw: (data) => {
-          const fakeEle = document.createElement('div');
-          // Hide it completely
-          fakeEle.style.position = 'absolute';
-          fakeEle.style.top = '0';
-          fakeEle.style.left = '-9999px';
-          fakeEle.style.overflow = 'hidden';
-          fakeEle.style.visibility = 'hidden';
-          fakeEle.style.whiteSpace = 'nowrap';
-          fakeEle.style.height = '0';
-          fakeEle.style.padding = '5px';
-
-          // We copy some styles from the textbox that effect the width
-          const textboxEle = document.getElementById('textbox');
-          const textctn = document.querySelector('.text-container');
-          textboxEle.value = '';
-
-          // Get the styles
-          const styles = window.getComputedStyle(textboxEle);
-
-          // Copy font styles from the textbox
-          fakeEle.style.fontFamily = styles.fontFamily;
-          fakeEle.style.fontSize = styles.fontSize;
-          fakeEle.style.fontStyle = styles.fontStyle;
-          fakeEle.style.fontWeight = styles.fontWeight;
-          fakeEle.style.letterSpacing = styles.letterSpacing;
-          fakeEle.style.textTransform = styles.textTransform;
-          
-          fakeEle.style.borderLeftWidth = styles.borderLeftWidth;
-          fakeEle.style.borderRightWidth = styles.borderRightWidth;
-          fakeEle.style.paddingLeft = styles.paddingLeft;
-          fakeEle.style.paddingRight = styles.paddingRight;
-
-          // Append the fake element to `body`
-          document.body.appendChild(fakeEle);
-          const setWidth = function () {
-            const string = textboxEle.value || textboxEle.getAttribute('placeholder') || '';
-            fakeEle.innerHTML = string.replace(/\s/g, '&' + 'nbsp;');
-            const fakeEleStyles = window.getComputedStyle(fakeEle);
-            textboxEle.style.width = parseFloat(fakeEleStyles.width) + 10 + 'px';
-            textctn.style.width = textboxEle.style.width
-            // textctn.style.height = textboxEle.style.fontSize;
+        };
+    
+        // -----------------add event listeners to our canvas ----------------------
+    
+        spreadCanvas.addEventListener('mousedown', onMouseDown, false);
+        spreadCanvas.addEventListener('mouseup', onMouseUp, false);
+        spreadCanvas.addEventListener('mouseout', onMouseUp, false);
+        spreadCanvas.addEventListener('mousemove', throttle(onMouseMove, 10), false);
+    
+        // Touch support for mobile devices
+        spreadCanvas.addEventListener('touchstart', onMouseDown, false);
+        spreadCanvas.addEventListener('touchend', onMouseUp, false);
+        spreadCanvas.addEventListener('touchcancel', onMouseUp, false);
+        spreadCanvas.addEventListener('touchmove', throttle(onMouseMove, 10), false);
+    
+        // -------------- make the canvas fill its parent component -----------------
+    
+        const onResize = () => {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+    
+          spreadCanvas.width = window.innerWidth;
+          spreadCanvas.height = window.innerHeight;
+          // const roomId = room.current;
+          getBoard(boardid);
+        };
+    
+        window.addEventListener('resize', onResize, false);
+        onResize();
+    
+        // ----------------------- authState.socket.io connection ----------------------------
+        const onDrawingEvent = (base64ImageData) => {
+          let image = new Image();
+          image.onload = function(){
+            ctx.drawImage(image, 0, 0);
           };
-          setWidth();
-          textctn.style.display = 'block';
-          textctn.style.left= data.x0 - parseFloat(textboxEle.style.width)/2 + 'px';
-          textctn.style.top = data.y0 - 25/2 + 'px';
-          textboxEle.addEventListener('input', function (e) {
-            setWidth();
-          });
-        }
-      }
+          image.src = base64ImageData;
+          previousBoard.current.push(base64ImageData);
+        };        
     }
+    
+  }, [boardid]);
 
-    // ---------------- mouse movement --------------------------------------
-
-    const onMouseDown = (e) => {
-      drawing = true;
-      current.x = e.clientX || e.touches.clientX;
-      current.y = e.clientY || e.touches.clientY;
-    };
-
-    const onMouseMove = (e) => {
-      if (!drawing) { return; }
-      let data = {
-        x0: current.x,
-        y0: current.y,
-        x1: e.clientX || e.touches.clientX,
-        y1: e.clientY || e.touches.clientY,
-        color: color.current,
-        size: size.current,
-        emit: true,
-      }
-      if(status.current) {
-        tools[tool.current].draw(data);
-      }else {
-        diffToast('Only see !')
-      }
-      // drawLine(current.x, current.y, e.clientX || e.touches.clientX, e.clientY || e.touches.clientY, color.current, size.current, true);
-      current.x = e.clientX || e.touches.clientX;
-      current.y = e.clientY || e.touches.clientY;
-    };
-
-    const onMouseUp = (e) => {
-      if (!drawing) { return; }
-      drawing = false;
-      let data = {
-        x0: current.x,
-        y0: current.y,
-        x1: e.clientX || e.touches.clientX,
-        y1: e.clientY || e.touches.clientY,
-        color: color.current,
-        size: size.current,
-        emit: true,
-      }
-      if(status.current) {
-        tools[tool.current].draw(data);
-      }else {
-        diffToast('Only see !')
-      }
-    };
-
-    // ----------- limit the number of events per second -----------------------
-
-    const throttle = (callback, delay) => {
-      let previousCall = new Date().getTime();
-      return function() {
-        const time = new Date().getTime();
-
-        if ((time - previousCall) >= delay) {
-          previousCall = time;
-          callback.apply(null, arguments);
-        }
-      };
-    };
-
-    // -----------------add event listeners to our canvas ----------------------
-
-    spreadCanvas.addEventListener('mousedown', onMouseDown, false);
-    spreadCanvas.addEventListener('mouseup', onMouseUp, false);
-    spreadCanvas.addEventListener('mouseout', onMouseUp, false);
-    spreadCanvas.addEventListener('mousemove', throttle(onMouseMove, 10), false);
-
-    // Touch support for mobile devices
-    spreadCanvas.addEventListener('touchstart', onMouseDown, false);
-    spreadCanvas.addEventListener('touchend', onMouseUp, false);
-    spreadCanvas.addEventListener('touchcancel', onMouseUp, false);
-    spreadCanvas.addEventListener('touchmove', throttle(onMouseMove, 10), false);
-
-    // -------------- make the canvas fill its parent component -----------------
-
-    const onResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      spreadCanvas.width = window.innerWidth;
-      spreadCanvas.height = window.innerHeight;
-      getBoard(roomId);
-    };
-
-    window.addEventListener('resize', onResize, false);
-    onResize();
-
-    // ----------------------- authState.socket.io connection ----------------------------
-    const onDrawingEvent = (data) => {
+  useEffect(() => {
+    const ctx = canvasRef.current.getContext('2d');
+    const onDrawingEvent = (base64ImageData) => {
+      
       let image = new Image();
       image.onload = function(){
         ctx.drawImage(image, 0, 0);
       };
-      image.src = data;
-      previousBoard.current.push(data);
-    };
+      image.src = base64ImageData;
+      previousBoard.current.push(base64ImageData);
+    };  
 
-    authState.socket.on('canvas-data', onDrawingEvent);
-    authState.socket.on('share-data', emitCanvas);
-    authState.socket.on('refresh', () => {
-      drawGrid();
-    });
-    authState.socket.on('roleStatus', (data) => {
-      updateRoleRef();
-  });
-  }, []);
+    const onRefreshEvent = (data) => {
+      if(boardId.current === data.boardid) {
+        drawGrid();
+      }
+    }
+
+    authState.socket.on('canvas-data', (data) => {
+      if(boardId.current === data.boardid){
+        onDrawingEvent(data.base64ImageData);
+        }     
+      });
+      authState.socket.on('share-data', emitCanvas);
+      authState.socket.on('refresh', onRefreshEvent);
+      authState.socket.on('roleStatus', (data) => {
+        updateRoleRef();
+      });
+  }, [])
 
   // ------------- The Canvas and color elements --------------------------
 
@@ -833,8 +937,8 @@ const Board = (props) => {
       <div></div> 
       <canvas ref={canvasRef} className="board" />
       <canvas ref= {spreadCanvasRef} className = "spreadboard" />
-      <Control onColorUpdate = {onColorUpdate} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate} download={download} refresh={refresh} uploadImage={uploadImage} undoBoard={undoBoard} redoBoard={redoBoard} roomId = {roomId}/>
-      <Chat roomId={roomId}/>
+      <Control onColorUpdate = {onColorUpdate} onSizeUpdate = {onSizeUpdate} onToolUpdate = {onToolUpdate} download={download} refresh={refresh} uploadImage={uploadImage} undoBoard={undoBoard} redoBoard={redoBoard} roomId = {room.current} boardId = {boardid} createBoard = {createBoard} listOfBoards = {listOfBoards} switchBoard = {switchBoard} deleteBoard = {deleteBoard}/>
+      <Chat roomId={room.current}/>
     </div>
   );
 };

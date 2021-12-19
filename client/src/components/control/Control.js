@@ -5,7 +5,8 @@ import { SketchPicker } from 'react-color';
 import {FaChevronLeft, FaBan, FaRegEye} from 'react-icons/fa';
 import {BiEdit} from 'react-icons/bi';
 import {MdOutlineAdminPanelSettings, MdAdminPanelSettings} from 'react-icons/md';
-import {RiUserSharedFill, RiUserStarFill} from 'react-icons/ri';
+import {GoPlus} from 'react-icons/go';
+import {RiUserSharedFill, RiUserStarFill, RiDeleteBin5Fill} from 'react-icons/ri';
 import axios from 'axios';
 import {toast} from 'react-toastify';
 import { AuthContext } from '../../helpers/AuthContext';
@@ -13,6 +14,9 @@ import {io} from 'socket.io-client';
 import './style.css'
 
 const URL = `${process.env.REACT_APP_CLIENT}/board`;
+const apiRoom = axios.create({
+    baseURL: `${process.env.REACT_APP_API}/rooms/`
+})
 const apiBoard = axios.create({
     baseURL: `${process.env.REACT_APP_API}/boards/`
 })
@@ -28,7 +32,7 @@ const apiUser = axios.create({
   
 // import { ReactComponent as LogIcon } from '../../icons/circle.svg';
 // rfce
-function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, uploadImage, undoBoard, redoBoard, roomId}) {
+function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, uploadImage, undoBoard, roomId, boardId, listOfBoards, createBoard, switchBoard, deleteBoard}) {
     const [color, setColor] = useState('lightblue');
     const [cursorX, setCursorX] = useState();
     const [cursorY, setCursorY] = useState();
@@ -40,7 +44,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
     const user = useRef();
     const [username, setUsername] = useState('Me');
     const roleId = useRef();
-    const boardId = useRef();
+    // const roomId = useRef();
     const linkURL = `${URL}/${roomId}`
     const { authState, setAuthState } = useContext(AuthContext);
 
@@ -96,7 +100,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
     }
 
     const kickfromRoom = (user_id) => {
-        const data = {userId: user_id, boardId: boardId.current, role_id: 5}
+        const data = {userId: user_id, roomId: roomId, role_id: 5}
         apiParticipations.put('updateRole', data, {
             headers: {  accessToken: localStorage.getItem('accessToken')},
         }).then((res) => {
@@ -110,7 +114,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
     }
 
     const setAdmin = (user_id) => {
-        const data = {userId: user_id, boardId: boardId.current, role_id: 2}
+        const data = {userId: user_id, roomId: roomId, role_id: 2}
         apiParticipations.put('updateRole', data, {
             headers: {  accessToken: localStorage.getItem('accessToken')},
         }).then((res) => {
@@ -124,7 +128,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
     }
 
     const cancelAdmin = (userId) => {
-        const data = {userId: userId, boardId: boardId.current, role_id: 3}
+        const data = {userId: userId, roomId: roomId, role_id: 3}
         apiParticipations.put('updateRole', data, {
             headers: {  accessToken: localStorage.getItem('accessToken')},
         }).then((res) => {
@@ -138,7 +142,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
     }
 
     const onlySee = (userId) => {
-        const data = {userId: userId, boardId: boardId.current, role_id: 4} //4: onlysee
+        const data = {userId: userId, roomId: roomId, role_id: 4} //4: onlysee
         apiParticipations.put('updateRole', data, {
             headers: {  accessToken: localStorage.getItem('accessToken')},
         }).then((res) => {
@@ -152,7 +156,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
     }
 
     const setEditor = (userId) => {
-        const data = {userId: userId, boardId: boardId.current, role_id: 3} //3: editor
+        const data = {userId: userId, roomId: roomId, role_id: 3} //3: editor
         apiParticipations.put('updateRole', data, {
             headers: {  accessToken: localStorage.getItem('accessToken')},
         }).then((res) => {
@@ -166,7 +170,8 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
     }
 
     const updateRoleRef = async () => {
-        apiParticipations.get(`/isParticipant/${boardId.current}`, {
+        console.log(roomId);
+        apiParticipations.get(`/isParticipant/${roomId}`, {
             headers: {accessToken: localStorage.getItem('accessToken')},
             })
             .then((res) => {
@@ -378,28 +383,42 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
 
         // get list adminId of board
         // check can you participate this room
-        apiBoard.get(`/${roomId}`,{ 
-            headers: { accessToken: localStorage.getItem('accessToken')},
-          })
-          .then((res) => {
-            if(res.data.id !== null){
-                boardId.current = res.data.id;
-                apiParticipations.get(`/isParticipant/${boardId.current}`, {
-                headers: {accessToken: localStorage.getItem('accessToken')},
-                })
-                .then((res) => {
+        // apiRoom.get(`/${roomId}`,{ 
+        //     headers: { accessToken: localStorage.getItem('accessToken')},
+        //   })
+        //   .then((res) => {
+        //     if(res.data.id !== null){
+        //         roomId = res.data.id;
+        //         apiParticipations.get(`/isParticipant/${roomId}`, {
+        //         headers: {accessToken: localStorage.getItem('accessToken')},
+        //         })
+        //         .then((res) => {
                     
-                    roleId.current = res.data.role_id;
+        //             roleId.current = res.data.role_id;
                     
-                    if(roleId.current === 5) { // kicked: 5
-                        redirectBlock();
-                    }
-                    else {
-                        joinRoom();
-                    }
-                })
+        //             if(roleId.current === 5) { // kicked: 5
+        //                 redirectBlock();
+        //             }
+        //             else {
+        //                 joinRoom();
+        //             }
+        //         })
+        //     }
+        //   })
+        apiParticipations.get(`/isParticipant/${roomId}`, {
+        headers: {accessToken: localStorage.getItem('accessToken')},
+        })
+        .then((res) => {
+            console.log('thanh vi');
+            roleId.current = res.data.role_id;
+            
+            if(roleId.current === 5) { // kicked: 5
+                redirectBlock();
             }
-          })
+            else {
+                joinRoom();
+            }
+        })
 
         // on socket 
         // get listOfUsers
@@ -438,23 +457,6 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                         <li><a onClick={refresh}>Refresh</a></li>
                         </ul>
                     </li>
-                    {/* <li>
-                        <a href='#'>Services</a>
-                        <ul>
-                        <li><a href='#'>Web Design</a></li>
-                        <li><a href='#'>App Design</a></li>
-                        <li>
-                            <a href='#'>More</a>
-                            <ul>
-                            <li><a href='#'>Submenu-1</a></li>
-                            <li><a href='#'>Submenu-2</a></li>
-                            <li><a href='#'>Submenu-3</a></li>
-                            </ul>
-                        </li>
-                        </ul>
-                    </li>
-                    <li><a href='#'>Portfolio</a></li>
-                    <li><a href='#'>Sign out</a></li> */}
                     </ul>
                     
                     <div>
@@ -512,6 +514,31 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                         color={color} onChange={(updateColor) => {setColor(updateColor.hex); onColorUpdate(updateColor.hex);}}
                     />
                 </div>
+
+                <div className='ctl-listboard'>
+                    {listOfBoards.map((value, key) => {
+                        if(value.id === boardId) {
+                            return (
+                                <div className='btn-ctl switch-board selected' onClick={() => {switchBoard(value.id);}} >{key + 1}</div>
+                            );
+                        }else{
+                            return (
+                                <div className='btn-ctl switch-board' onClick={() => {switchBoard(value.id);}} >{key + 1}</div>
+                            );
+                        }
+                        
+                    })}
+                    <div className='btn-ctl createboard' onClick={createBoard}>
+                        <span>
+                            <GoPlus/>
+                        </span>
+                    </div>
+                    <div className='btn-ctl deleteboard' onClick={() => deleteBoard(boardId)}>
+                        <span>
+                            <RiDeleteBin5Fill/>
+                        </span>
+                    </div>
+                </div>
                 
                 {/* <p id='size_label' style={{color: 'red'}}>Size: 5</p> */}
                 </div>
@@ -523,7 +550,7 @@ function Control({onColorUpdate, onSizeUpdate, onToolUpdate, download, refresh, 
                         height: size + 'px',
                     }}
                 >
-                </div>
+            </div>
         </>
     )
 }

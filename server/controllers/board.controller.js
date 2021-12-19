@@ -1,19 +1,30 @@
 const {Boards} = require('../models');
+const {Rooms} = require('../models')
 const shortid = require('shortid');
 const crypto = require("crypto");
-module.exports.getAll = function(req, res) {
+module.exports.getAll = async function(req, res) {
+    const roomId = req.params.roomId;
+    const room  = await Rooms.findOne({
+        where: {
+            roomId: roomId,
+        }
+    })
+    console.log(room.id);
+    console.log(roomId);
+    console.log('get All');
+    console.log(roomId);
     Boards.findAll({
         where: {
-            userId: req.user.id
+            roomId: room.id
         }
     }).then(boards => res.json(boards));
 };
 
 module.exports.getById = async function(req, res) {
-    const room = req.params.id;
+    const id = req.params.id;
     Boards.findOne({
         where: {
-            room: room
+            id: id
         }           
     }).then(async (board) => {
         res.json(board);
@@ -21,51 +32,25 @@ module.exports.getById = async function(req, res) {
 };
 
 module.exports.create = async function(req, res) {
-    let { title, room} = req.body;
-    const user = req.user;
-    let exist_board = await Boards.findOne({
+    let {roomId} = req.body;
+    const room  = await Rooms.findOne({
         where: {
-            room: room,
+            roomId: roomId,
         }
-    });
-
-    while(exist_board) {
-        room = crypto.randomBytes(30).toString("hex");
-        exist_board = await Boards.findOne({
-            where: {
-                room: room,
-            }
-        });
-    }
-    
+    })
     Boards.create({ 
-        title: title,
-        room: room,
-        userId: user.id,
+        roomId: room.id,
     }).then(board => res.json(board))
 };
 
-module.exports.updateTitle = async function(req, res) {
-    const {boardId, title} = req.body;
-    console.log(boardId)
-    await Boards.update(
-        {
-            title: title
-        },
-        {
-            where: {id: boardId}
-        }
-    ).then(() => res.json("edit successfully"));
-};
-
 module.exports.updateBoard = async function(req, res) {
-    const {room, dataUrl} = req.body;
+    const {boardId, dataUrl} = req.body;
     await Boards.update(
         { 
         dataUrl: dataUrl
         },
         {
-            where: {room: room}
+            where: {id: boardId}
         }
     ).then(() => res.json("edit successfully"));
 };
@@ -74,8 +59,7 @@ module.exports.delete = async function(req, res) {
     const boardId = req.params.boardId;
     Boards.destroy({
         where:{
-            id: boardId,
-            userId: req.user.id
+            id: boardId
         }
     }).then(() => res.json("delete successfully"));
     res.json("DELETE SUCCESSFULLY");

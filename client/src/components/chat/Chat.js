@@ -43,7 +43,6 @@ function Chat(props) {
             div1.classList.add('user-photo');
             p.classList.add('message');
             p.innerHTML = `<span class='username'>${username.current}</span>${data.msg}`;
-            console.log(username.current)
             img.src = data.photo;
             div1.appendChild(img);
             div.appendChild(div1);
@@ -87,7 +86,6 @@ function Chat(props) {
                 headers: {accessToken: localStorage.getItem('accessToken')}
                 }).then((res) => {
                 username.current = res.data.username;
-                console.log(res.data);
             });
 
             api.get('photo', {

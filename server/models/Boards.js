@@ -11,12 +11,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.belongsTo(models.Users, {foreignKey: 'userId'});
+      this.belongsTo(models.Rooms, {onDelete: 'cascade', foreignKey: 'roomId'});
     }
   };
   Boards.init({
-    title: DataTypes.STRING,
-    room: DataTypes.STRING,
     dataUrl: DataTypes.TEXT('long')
   }, {
     sequelize,

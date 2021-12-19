@@ -27,7 +27,7 @@ function App() {
             <Route path='/' exact component={Home} />
             <Route path='/login' exact component={Login} />
             <Route path='/login/:id' exact component={Login} />
-            <Route path='/board/:id' exact component={Whiteboard} />
+            <Route path='/room/:id' exact component={Whiteboard} />
             <Route path='/reset/' exact component={Forgot} />
             <Route path='/reset/:token' exact component={Newpassword} />
             <Route path='/overload' exact component={OverloadPage} />

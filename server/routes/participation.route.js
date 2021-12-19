@@ -5,7 +5,7 @@ var controller= require('../controllers/participation.controller');
 
 router.post('/create', validateToken, controller.create);
 
-router.get('/isParticipant/:boardId', validateToken, controller.isParticipant);
+router.get('/isParticipant/:roomId', validateToken, controller.isParticipant);
 
 router.put('/updateRole', validateToken, controller.updateRole);
 

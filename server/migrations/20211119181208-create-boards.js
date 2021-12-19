@@ -8,12 +8,6 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      title: {
-        type: Sequelize.STRING
-      },
-      room: {
-        type: Sequelize.STRING
-      },
       dataUrl: {
         type: Sequelize.TEXT('long')
       },

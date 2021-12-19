@@ -44,7 +44,7 @@ function onConnection(socket){
 
     // listen for canvas-data
     socket.on('canvas-data', (data) => {
-        socket.to(data.roomId).emit('canvas-data', data.base64ImageData);
+        socket.to(data.roomId).emit('canvas-data', data, );
     })
 
     socket.on('refresh', (data) => {
@@ -84,6 +84,8 @@ function onConnection(socket){
 io.on('connection', onConnection);
 
 // Routers
+const roomRouter = require('./routes/room.route');
+app.use('/rooms', roomRouter);
 const postRouter = require('./routes/board.route');
 app.use('/boards', postRouter);
 const usersRouter = require('./routes/user.route');
