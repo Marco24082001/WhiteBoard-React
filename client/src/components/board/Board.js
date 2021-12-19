@@ -54,14 +54,14 @@ const Board = (props) => {
   
   // emit data
   const emitCanvas = () => {
-    if(timeout.current !== undefined) clearTimeout(timeout.current)
+    if(timeout.current !== undefined) clearTimeout(timeout.current);
         timeout.current = setTimeout(() => {
           let base64ImageData = canvasRef.current.toDataURL("image/png");
           let roomId = room.current;
           previousBoard.current.push(base64ImageData)
           authState.socket.emit("canvas-data", {roomId, boardid,base64ImageData});
           updateBoard(base64ImageData);
-        }, 200);
+        }, 0);
   }
 
   // update cursor
@@ -421,6 +421,8 @@ const Board = (props) => {
         boardId.current = res.data.id;
         setBoardid(res.data.id);
         resetListOfBoards();
+        const roomId = room.current;
+        authState.socket.emit("changeListOfBoards", {roomId, boardid});
       }
     })
   }
@@ -439,6 +441,8 @@ const Board = (props) => {
           const idx = index?(index - 1):(index + 1);
           setBoardid(listOfBoards[idx].id);
           resetListOfBoards();
+          const roomId = room.current;
+          authState.socket.emit("refresh", {roomId, boardid});
         }
       })
     }
@@ -545,34 +549,53 @@ const Board = (props) => {
     
           'pencil': {
             draw: (data) => {
-              ctx.beginPath();
-              ctx.moveTo(data.x0, data.y0);
-              ctx.lineTo(data.x1, data.y1);
-              ctx.strokeStyle = data.color;
-              ctx.lineWidth = data.size;
-              ctx.lineCap = "round";
-              ctx.lineJoin = "round";
-              ctx.stroke();
-              ctx.closePath();
-              if (!data.emit) { return; }
-              emitCanvas();
+              spreadctx.beginPath();
+              spreadctx.moveTo(data.x0, data.y0);
+              spreadctx.lineTo(data.x1, data.y1);
+              spreadctx.strokeStyle = data.color;
+              spreadctx.lineWidth = data.size;
+              spreadctx.lineCap = "round";
+              spreadctx.lineJoin = "round";
+              spreadctx.stroke();
+              spreadctx.closePath();
+              if(!drawing) {
+                let base64ImageData = spreadCanvasRef.current.toDataURL("image/png");
+                let image = new Image();
+                image.onload = function(){
+                  ctx.drawImage(image, 0, 0);
+                };
+                image.src = base64ImageData;
+                spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
+                if (!data.emit) { return; }
+                emitCanvas();
+              }              
             } 
           },
     
           'eraser': {
             draw: (data) => {
-              ctx.beginPath();
-              ctx.moveTo(data.x0, data.y0);
-              ctx.lineTo(data.x1, data.y1);
-              ctx.strokeStyle = '#ffffff';
-              ctx.lineWidth = data.size;
-              ctx.lineCap = "round";
-              ctx.lineJoin = "round";
-              ctx.stroke();
-              ctx.closePath();
-    
-              if (!data.emit) { return; }
-              emitCanvas();
+              spreadctx.beginPath();
+              spreadctx.moveTo(data.x0, data.y0);
+              spreadctx.lineTo(data.x1, data.y1);
+              spreadctx.strokeStyle = '#ffffff';
+              spreadctx.lineWidth = data.size;
+              spreadctx.lineCap = "round";
+              spreadctx.lineJoin = "round";
+              spreadctx.stroke();
+              spreadctx.closePath();
+
+              if(!drawing) {
+                let base64ImageData = spreadCanvasRef.current.toDataURL("image/png");
+                let image = new Image();
+                image.onload = function(){
+                  ctx.drawImage(image, 0, 0);
+                };
+                image.src = base64ImageData;
+                spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
+                if (!data.emit) { return; }
+                emitCanvas();
+              }
+              
             } 
           },
     
@@ -609,9 +632,9 @@ const Board = (props) => {
                 ctx.stroke();
                 ctx.closePath();
                 previous.current = [];
+                if (!data.emit) { return; }
+                emitCanvas();
               }
-              if (!data.emit) { return; }
-              emitCanvas();
             }
           },
     
@@ -883,7 +906,6 @@ const Board = (props) => {
   useEffect(() => {
     const ctx = canvasRef.current.getContext('2d');
     const onDrawingEvent = (base64ImageData) => {
-      
       let image = new Image();
       image.onload = function(){
         ctx.drawImage(image, 0, 0);
@@ -908,6 +930,7 @@ const Board = (props) => {
       authState.socket.on('roleStatus', (data) => {
         updateRoleRef();
       });
+      authState.socket.on('changeListOfBoards', resetListOfBoards);
   }, [])
 
   // ------------- The Canvas and color elements --------------------------

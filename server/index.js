@@ -66,6 +66,10 @@ function onConnection(socket){
         io.in(roomId).emit('listOfUsers', listOfUsers)
     })
 
+    socket.on('changeListOfBoards', (data) => {
+        socket.to(data.roomId).emit('changeListOfBoards', data, );
+    })
+
     socket.on('disconnect', () => {
         console.log('user off');
         const user = getCurrentUser(socket.id);

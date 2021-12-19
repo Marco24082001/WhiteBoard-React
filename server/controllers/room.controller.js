@@ -37,6 +37,7 @@ module.exports.create = async function(req, res) {
 
 module.exports.updateTitle = async function(req, res) {
     const {roomId, title} = req.body;
+    
     console.log(roomId)
     await Rooms.update(
         {
