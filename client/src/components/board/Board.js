@@ -565,7 +565,10 @@ const Board = (props) => {
                   ctx.drawImage(image, 0, 0);
                 };
                 image.src = base64ImageData;
-                spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
+                setTimeout(() => {
+                  spreadctx.clearRect(0,0,spreadCanvas.width, spreadCanvas.height);
+                }, 50)
+                
                 if (!data.emit) { return; }
                 emitCanvas();
               }              

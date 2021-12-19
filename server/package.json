@@ -12,7 +12,6 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",
-    "blueimp-canvas-to-blob": "^3.29.0",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
     "dotenv": "^10.0.0",
