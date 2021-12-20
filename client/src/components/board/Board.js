@@ -129,6 +129,7 @@ const Board = (props) => {
   }
 
   const lockimg = () => {
+    if(status.current) {
       const dragImg = document.querySelector('.item');
       const img = new Image();
       let bg = dragImg.style.backgroundImage;
@@ -142,23 +143,30 @@ const Board = (props) => {
       dragImg.style.display = 'none';
       dragImg.replaceWith(dragImg.cloneNode(true));
       emitCanvas();
-      
+    }else {
+      diffToast('Only see !')
+    }
   }
 
   const locktxt = () => {
-    const textboxEle = document.getElementById('textbox');
-    const textctn = document.querySelector('.text-container');
-    // textctn.style.display = 'none';
-    const ctx = canvasRef.current.getContext('2d');
-    ctx.font = "15px Comic";
-    // ctx.fontSize = '20';
-    ctx.fontFamily = textboxEle.style.fontFamily;
-    ctx.fillStyle = color.current;
-    // ctx.textAlign = "center";
-    let rect = textboxEle.getBoundingClientRect();
-    ctx.fillText(textboxEle.value, parseFloat(rect.left) + 2, parseFloat(rect.top) + parseFloat(rect.height)/2 + 2);
-    textctn.style.display = 'none';
-    emitCanvas();
+    if(status.current) {
+      const textboxEle = document.getElementById('textbox');
+      const textctn = document.querySelector('.text-container');
+      // textctn.style.display = 'none';
+      const ctx = canvasRef.current.getContext('2d');
+      ctx.font = "15px Comic";
+      // ctx.fontSize = '20';
+      ctx.fontFamily = textboxEle.style.fontFamily;
+      ctx.fillStyle = color.current;
+      // ctx.textAlign = "center";
+      let rect = textboxEle.getBoundingClientRect();
+      ctx.fillText(textboxEle.value, parseFloat(rect.left) + 2, parseFloat(rect.top) + parseFloat(rect.height)/2 + 2);
+      textctn.style.display = 'none';
+      emitCanvas();
+    }else{
+      diffToast('Only See !');
+    }
+    
   }
 
   const removeimg = () => {
@@ -236,9 +244,13 @@ const Board = (props) => {
 
   // refresh canvas
   const refresh = () => {
-    let roomId = room.current;
-    drawGrid();
-    authState.socket.emit("refresh", {roomId, boardid});
+    if(status.current) {
+      let roomId = room.current;
+      drawGrid();
+      authState.socket.emit("refresh", {roomId, boardid});
+    }else{
+      diffToast('Only See !');
+    }
   }
 
   const drawImg = (data) => {
@@ -252,12 +264,17 @@ const Board = (props) => {
 
   // undo board
   const undoBoard = () => {
-    if(previousBoard.current.length > 1) {
-      let data = previousBoard.current.slice(-2)[0];
-      previousBoard.current.splice(-2, 2);
-      drawImg(data);      
-      emitCanvas();
+    if(status.current) {
+      if(previousBoard.current.length > 1) {
+        let data = previousBoard.current.slice(-2)[0];
+        previousBoard.current.splice(-2, 2);
+        drawImg(data);      
+        emitCanvas();
+      }
+    }else {
+      diffToast('Only See !');
     }
+    
   }
 
   const redoBoard = () => {
@@ -268,8 +285,6 @@ const Board = (props) => {
       emitCanvas();
     }
   }
-
-  
 
   // download canvas
   const download = (e) => {
@@ -409,42 +424,46 @@ const Board = (props) => {
   }
 
   const createBoard = () => {
-    const newBoard = {roomId: room.current};
-    apiBoard
-    .post('create', newBoard, {  headers: {
-      accessToken: localStorage.getItem('accessToken')
-    }})
-    .then((res) => {
-      if(res.data.error){
-        alert(res.data.error);
-      }else{
-        boardId.current = res.data.id;
-        setBoardid(res.data.id);
-        resetListOfBoards();
-        const roomId = room.current;
-        authState.socket.emit("changeListOfBoards", {roomId, boardid});
-      }
-    })
-  }
-
-  const deleteBoard = (id) => {
-    if(listOfBoards.length > 1) {
-      apiBoard.delete(`delete/${id}`, { headers: {
+    if(status.current) {
+      const newBoard = {roomId: room.current};
+      apiBoard
+      .post('create', newBoard, {  headers: {
         accessToken: localStorage.getItem('accessToken')
       }})
       .then((res) => {
-        if(res.data.error) {
+        if(res.data.error){
           alert(res.data.error);
-        }else {
-          // boardId.current
-          const index = listOfBoards.findIndex(board => board.id === id);
-          const idx = index?(index - 1):(index + 1);
-          setBoardid(listOfBoards[idx].id);
+        }else{
+          boardId.current = res.data.id;
+          setBoardid(res.data.id);
           resetListOfBoards();
           const roomId = room.current;
-          authState.socket.emit("refresh", {roomId, boardid});
+          authState.socket.emit("changeListOfBoards", {roomId, boardid});
         }
       })
+    }
+  }
+
+  const deleteBoard = (id) => {
+    if(status.current){
+      if(listOfBoards.length > 1) {
+        apiBoard.delete(`delete/${id}`, { headers: {
+          accessToken: localStorage.getItem('accessToken')
+        }})
+        .then((res) => {
+          if(res.data.error) {
+            alert(res.data.error);
+          }else {
+            // boardId.current
+            const index = listOfBoards.findIndex(board => board.id === id);
+            const idx = index?(index - 1):(index + 1);
+            setBoardid(listOfBoards[idx].id);
+            resetListOfBoards();
+            const roomId = room.current;
+            authState.socket.emit("refresh", {roomId, boardid});
+          }
+        })
+      }
     }
   }
 
@@ -469,25 +488,7 @@ const Board = (props) => {
   }
 
   useEffect(() => {
-    const roomId =room.current;
-    apiRoom.get(`/${roomId}`,{ 
-      headers: { accessToken: localStorage.getItem('accessToken')},
-    })
-    .then((res) => {
-      if(res.data.id !== null){
-          boardId.current = res.data.id;
-          apiParticipations.get(`/isParticipant/${boardId.current}`, {
-          headers: {accessToken: localStorage.getItem('accessToken')},
-          })
-          .then((res) => {
-              if(res.data.role_id === 4) { // kicked: 5
-                  status.current = false;
-              }else {
-                status.current = true;
-              }
-          })
-      }
-    })
+    updateRoleRef();
 
     apiBoard.get(`all/${room.current}`, {  headers: {
       accessToken: localStorage.getItem('accessToken')
@@ -510,9 +511,6 @@ const Board = (props) => {
 
   useEffect(() => {
     // retrive data board when access
-    // if(boardid !== null) {
-
-    // }
     if(boardid !== null){
         const getBoard = (boardId) => {
           apiBoard.get(`/${boardId}`,{ 
@@ -715,16 +713,6 @@ const Board = (props) => {
               spreadctx.lineJoin = "round";
               spreadctx.closePath();
               spreadctx.stroke();
-    
-              // spreadctx.clearRect(0, 0, spreadCanvas.width, spreadCanvas.height);
-              // spreadctx.beginPath();
-              // spreadctx.arc(previous.current[0].x, previous.current[0].y, radius, 0, 2 * Math.PI);
-              // spreadctx.strokeStyle = data.color;
-              // spreadctx.lineWidth = data.size;
-              // spreadctx.lineCap = "round";
-              // spreadctx.lineJoin = "round";
-              // spreadctx.stroke();
-              // spreadctx.closePath();
     
               if(!drawing) {
                 // draw to main canvas if mouseup
@@ -933,8 +921,6 @@ const Board = (props) => {
       });
       authState.socket.on('changeListOfBoards', resetListOfBoards);
   }, [])
-
-  // ------------- The Canvas and color elements --------------------------
 
   return (
     
