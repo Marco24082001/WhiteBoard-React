@@ -6,7 +6,7 @@ module.exports.getAll = function(req, res) {
     Rooms.findAll({
         where: {
             userId: req.user.id
-        }
+        }   
     }).then(rooms => res.json(rooms));
 };
 
