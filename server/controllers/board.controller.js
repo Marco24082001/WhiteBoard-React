@@ -9,10 +9,6 @@ module.exports.getAll = async function(req, res) {
             roomId: roomId,
         }
     })
-    console.log(room.id);
-    console.log(roomId);
-    console.log('get All');
-    console.log(roomId);
     Boards.findAll({
         where: {
             roomId: room.id
@@ -62,5 +58,4 @@ module.exports.delete = async function(req, res) {
             id: boardId
         }
     }).then(() => res.json("delete successfully"));
-    res.json("DELETE SUCCESSFULLY");
 };

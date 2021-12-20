@@ -13,7 +13,7 @@ import { AuthContext } from '../../helpers/AuthContext';
 import {io} from 'socket.io-client';
 import './style.css'
 
-const URL = `${process.env.REACT_APP_CLIENT}/board`;
+const URL = `${process.env.REACT_APP_CLIENT}/room`;
 const apiRoom = axios.create({
     baseURL: `${process.env.REACT_APP_API}/rooms/`
 })

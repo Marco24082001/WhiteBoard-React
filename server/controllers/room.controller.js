@@ -57,5 +57,4 @@ module.exports.delete = async function(req, res) {
             userId: req.user.id
         }
     }).then(() => res.json("delete successfully"));
-    res.json("DELETE SUCCESSFULLY");
 };
