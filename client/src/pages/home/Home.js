@@ -158,7 +158,7 @@ function Home() {
               onClick={(e) => {
                 if(e.srcElement == this)  history.push(`/room/${value.roomId}`);
               }}
-              style={{backgroundImage: `url(${value.dataUrl})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundSize: '300px 300px'}}
+              // style={{backgroundImage: `url(../../images/tl.webp)`, backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundSize: '300px 300px'}}
             > 
               <div className='footer' onClick= {(e) => {
                 e.stopPropagation();

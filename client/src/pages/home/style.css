@@ -24,7 +24,15 @@
     font-family: Arial, Helvetica, sans-serif;
     box-shadow: 0 0 10px 0 rgb(124, 124, 124);
     position: relative;
+    
     /* background-color: rgba(255, 255, 255, 0.911); */
+}
+
+.box.boards {
+    background-image: url('../../images/tl.webp');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 300px 300px;
 }
 .createButton:hover {
     border: 3px solid white;
