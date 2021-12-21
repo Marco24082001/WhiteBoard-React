@@ -2,7 +2,20 @@ const {Rooms} = require('../models');
 const shortid = require('shortid');
 const crypto = require("crypto");
 
+module.exports.getById = async function(req, res) {
+    // console.log(req.params.id);
+    const roomId = req.params.id;
+    Rooms.findOne({
+        where: {
+            roomId: roomId
+        }           
+    }).then((room) => {
+        res.json(room);
+    });
+};
+
 module.exports.getAll = function(req, res) {
+    console.log(req.user.id);
     Rooms.findAll({
         where: {
             userId: req.user.id

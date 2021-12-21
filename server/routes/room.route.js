@@ -5,6 +5,8 @@ var controller= require('../controllers/room.controller');
 
 router.get("/all", validateToken, controller.getAll);
 
+router.get("/:id", validateToken, controller.getById);
+
 router.post("/create", validateToken, controller.create);
 
 router.put("/updatetitle", validateToken, controller.updateTitle);

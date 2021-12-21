@@ -44,7 +44,6 @@ const Board = (props) => {
   const status = useRef(true);
   const boardId = useRef(null);
   const index = useRef(-1);
-  const isdrag = useRef(false);
   const [boardid, setBoardid] = useState(null);
   
   const diffToast = (msg) => {
@@ -64,6 +63,16 @@ const Board = (props) => {
         }, 0);
   }
 
+  const emitUndoCanvas = () => {
+    if(timeout.current !== undefined) clearTimeout(timeout.current);
+        timeout.current = setTimeout(() => {
+          let base64ImageData = canvasRef.current.toDataURL("image/png");
+          let roomId = room.current;
+          previousBoard.current.push(base64ImageData)
+          authState.socket.emit("undoBoard", {roomId, boardid,base64ImageData});
+          updateBoard(base64ImageData);
+        }, 0);
+  }
   // update cursor
   const updateCursor = (cursor) => {
     const cs = document.querySelector('.cursor');
@@ -246,7 +255,10 @@ const Board = (props) => {
   const refresh = () => {
     if(status.current) {
       let roomId = room.current;
-      drawGrid();
+      // drawGrid();
+      const ctx = canvasRef.current.getContext('2d');
+      ctx.beginPath();
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       authState.socket.emit("refresh", {roomId, boardid});
     }else{
       diffToast('Only See !');
@@ -255,6 +267,7 @@ const Board = (props) => {
 
   const drawImg = (data) => {
     const ctx = canvasRef.current.getContext('2d');
+    ctx.clearRect(0,0,canvasRef.current.width, canvasRef.current.height);
     let image = new Image();
     image.onload = function(){
       ctx.drawImage(image, 0, 0);
@@ -265,11 +278,11 @@ const Board = (props) => {
   // undo board
   const undoBoard = () => {
     if(status.current) {
-      if(previousBoard.current.length > 1) {
+      if(previousBoard.current.length > 1) {    
         let data = previousBoard.current.slice(-2)[0];
         previousBoard.current.splice(-2, 2);
         drawImg(data);      
-        emitCanvas();
+        emitUndoCanvas();
       }
     }else {
       diffToast('Only See !');
@@ -523,7 +536,7 @@ const Board = (props) => {
                 title.current = res.data.title;
               }
               else {
-                drawGrid();
+                // drawGrid();
                 let base64ImageData = canvasRef.current.toDataURL("image/png");
                 previousBoard.current.push(base64ImageData)
               }
@@ -573,15 +586,25 @@ const Board = (props) => {
     
           'eraser': {
             draw: (data) => {
-              spreadctx.beginPath();
-              spreadctx.moveTo(data.x0, data.y0);
-              spreadctx.lineTo(data.x1, data.y1);
-              spreadctx.strokeStyle = '#ffffff';
-              spreadctx.lineWidth = data.size;
-              spreadctx.lineCap = "round";
-              spreadctx.lineJoin = "round";
-              spreadctx.stroke();
-              spreadctx.closePath();
+
+              ctx.beginPath();
+              ctx.save();
+              ctx.arc(data.x1, data.y1, data.size/2, 0, 2 * Math.PI, false);
+              ctx.clip();
+              ctx.clearRect(data.x1 - data.size/2 - 1, data.y1 - data.size/2 - 1,
+                data.size + 2, data.size + 2);
+              ctx.restore();
+              // ctx.restore();
+              // spreadctx.closePath();
+              // spreadctx.beginPath();
+              // spreadctx.moveTo(data.x0, data.y0);
+              // spreadctx.lineTo(data.x1, data.y1);
+              // spreadctx.strokeStyle = '#ffffff';
+              // spreadctx.lineWidth = data.size;
+              // spreadctx.lineCap = "round";
+              // spreadctx.lineJoin = "round";
+              // spreadctx.stroke();
+              // spreadctx.closePath();
 
               if(!drawing) {
                 let base64ImageData = spreadCanvasRef.current.toDataURL("image/png");
@@ -881,6 +904,9 @@ const Board = (props) => {
     
         // ----------------------- authState.socket.io connection ----------------------------
         const onDrawingEvent = (base64ImageData) => {
+          // const ctx = canvasRef.current.getContext('2d');
+          // ctx.beginPath();
+          // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
           let image = new Image();
           image.onload = function(){
             ctx.drawImage(image, 0, 0);
@@ -895,6 +921,7 @@ const Board = (props) => {
   useEffect(() => {
     const ctx = canvasRef.current.getContext('2d');
     const onDrawingEvent = (base64ImageData) => {
+      // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       let image = new Image();
       image.onload = function(){
         ctx.drawImage(image, 0, 0);
@@ -905,7 +932,17 @@ const Board = (props) => {
 
     const onRefreshEvent = (data) => {
       if(boardId.current === data.boardid) {
-        drawGrid();
+        // drawGrid();
+        ctx.beginPath();
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      }
+    }
+
+    const onUndoBoard = (data) => {
+      console.log('thanh vi');
+      if(boardId.current === data.boardid) {
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        onDrawingEvent(data.base64ImageData);
       }
     }
 
@@ -916,6 +953,7 @@ const Board = (props) => {
       });
       authState.socket.on('share-data', emitCanvas);
       authState.socket.on('refresh', onRefreshEvent);
+      authState.socket.on('undoBoard', onUndoBoard);
       authState.socket.on('roleStatus', (data) => {
         updateRoleRef();
       });

@@ -47,6 +47,10 @@ function onConnection(socket){
         socket.to(data.roomId).emit('canvas-data', data, );
     })
 
+    socket.on('undoBoard', (data) => {
+        socket.to(data.roomId).emit('undoBoard', data, );
+    })
+
     socket.on('refresh', (data) => {
         socket.to(data.roomId).emit('refresh', data);
     })

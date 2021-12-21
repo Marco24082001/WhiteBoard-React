@@ -18,30 +18,37 @@ module.exports.create = async function(req, res) {
 module.exports.isParticipant = async function(req, res) {
     const userId = req.user.id;
     const roomId = req.params.roomId;
+    console.log(roomId);
     const room = await Rooms.findOne({
         where: {
             roomId: roomId,
         }
     });
-    const participant = await Room_participant.findOne({
-        where: {
-            userId: userId,
-            roomId: room.id,
+    if(!room) {
+        console.log(room);
+        return res.json({error: "not exit room"})
+    }else {
+        const participant = await Room_participant.findOne({
+            where: {
+                userId: userId,
+                roomId: room.id,
+            }
+        });
+    
+        if(!participant) {
+            Room_participant.create({
+                roomId: room.id,
+                userId: userId,
+                role_id: 3,
+            }).then((rs) => {
+                return res.json({role_id: rs.role_id})
+            })
         }
-    });
-
-    if(!participant) {
-        Room_participant.create({
-            roomId: room.id,
-            userId: userId,
-            role_id: 3,
-        }).then((rs) => {
-            return res.json({role_id: rs.role_id})
-        })
+        else {
+            return res.json({role_id: participant.role_id})
+        };
     }
-    else {
-        return res.json({role_id: participant.role_id})
-    };
+    
 };
 
 module.exports.updateRole = async function(req, res) {
@@ -53,16 +60,21 @@ module.exports.updateRole = async function(req, res) {
             roomId: roomId,
         }
     });
-    Room_participant.update(
-        {
-            role_id : role_id
-        },
-        {
-            where: {
-                userId: userId,
-                roomId: room.id,
+
+    if(!room) {
+        return res.json({error: 'Not exited Board'});
+    }else {
+        Room_participant.update(
+            {
+                role_id : role_id
+            },
+            {
+                where: {
+                    userId: userId,
+                    roomId: room.id,
+                }
             }
-        }
-    ).then((rs) => res.json("Successfully!"))
-     .catch((err) => res.json({error: err}));
+        ).then((rs) => res.json("Successfully!"))
+         .catch((err) => res.json({error: err}));
+    }
 };

@@ -9,11 +9,15 @@ module.exports.getAll = async function(req, res) {
             roomId: roomId,
         }
     })
-    Boards.findAll({
-        where: {
-            roomId: room.id
-        }
-    }).then(boards => res.json(boards));
+    if(!room){
+        return res.json({error: 'Not exit room'})
+    }else {
+        Boards.findAll({
+            where: {
+                roomId: room.id
+            }
+        }).then(boards => res.json(boards));
+    }
 };
 
 module.exports.getById = async function(req, res) {
@@ -22,7 +26,7 @@ module.exports.getById = async function(req, res) {
         where: {
             id: id
         }           
-    }).then(async (board) => {
+    }).then((board) => {
         res.json(board);
     });
 };
@@ -34,9 +38,13 @@ module.exports.create = async function(req, res) {
             roomId: roomId,
         }
     })
-    Boards.create({ 
-        roomId: room.id,
-    }).then(board => res.json(board))
+    if(!room) {
+        return res.json({error: 'Not exited room'})
+    }else {
+        Boards.create({ 
+            roomId: room.id,
+        }).then(board => res.json(board))
+    }
 };
 
 module.exports.updateBoard = async function(req, res) {
