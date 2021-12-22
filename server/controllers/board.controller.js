@@ -57,6 +57,7 @@ module.exports.updateBoard = async function(req, res) {
             where: {id: boardId}
         }
     ).then(() => res.json("edit successfully"));
+    // return res.json('suceess');
 };
 
 module.exports.delete = async function(req, res) {

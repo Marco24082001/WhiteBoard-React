@@ -51,6 +51,10 @@ function onConnection(socket){
         socket.to(data.roomId).emit('undoBoard', data, );
     })
 
+    socket.on('eraser-data', (data) => {
+        socket.to(data.roomId).emit('eraser-data', data,);
+    })
+
     socket.on('refresh', (data) => {
         socket.to(data.roomId).emit('refresh', data);
     })
